@@ -1140,6 +1140,23 @@ body.dark #subjectFilter {
   border-color: var(--primary-500);
 }
 
+/* 과목 옆 정부 필터: 그룹 분리(붙어 보이는 문제 해결) */
+#govFilter {
+  padding-left: var(--space-5);
+  margin-left: var(--space-2);
+  border-left: 1px solid var(--border-subtle);
+  min-width: 120px; /* 너무 커 보이면 조절 */
+}
+
+/* 화면 좁아질 때는 구분선/여백 제거(줄바꿈 자연스럽게) */
+@media (max-width: 720px) {
+  #govFilter {
+    padding-left: 0;
+    margin-left: 0;
+    border-left: none;
+  }
+}
+
 .reset-btn {
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);

@@ -102,6 +102,7 @@ let state = {
   currentAgeFilter: "all",
   currentCategoryFilter: "all",
   currentSubjectFilter: "all",
+  currentGovFilter: "all",
   currentSearchQuery: "",
   ITEMS_PER_PAGE: 5,
   currentPageByCategory: {}
@@ -165,7 +166,8 @@ function getFilteredSitesWithCache() {
   const cacheManager = window.memoryManager?.cacheManager;
   
   // 캐시 키 생성
-  const cacheKey = `filtered_${state.currentSearchQuery}_${state.currentAgeFilter}_${state.currentCategoryFilter}_${state.currentSubjectFilter}`;
+  const cacheKey =
+  `filtered_${state.currentSearchQuery}_${state.currentAgeFilter}_${state.currentCategoryFilter}_${state.currentSubjectFilter}_${state.currentGovFilter}`;
   
   // 🧹 캐시에서 먼저 확인
   if (cacheManager) {
@@ -184,7 +186,7 @@ function getFilteredSitesWithCache() {
     if (state.currentAgeFilter !== "all" && !site.ages.includes(state.currentAgeFilter)) return false;
     if (state.currentCategoryFilter !== "all" && site.category !== state.currentCategoryFilter) return false;
     if (state.currentSubjectFilter !== "all" && !site.subjects.includes(state.currentSubjectFilter)) return false;
-    
+    if (state.currentGovFilter === "gov" && site.isGov !== true) return false;
     if (!q) return true;
 
     const searchTarget = (
@@ -570,6 +572,9 @@ function getFilteredSites() {
 
     // 과목 필터
     if (state.currentSubjectFilter !== "all" && !subjects.includes(state.currentSubjectFilter)) return false;
+
+    // 정부 필터
+    if (state.currentGovFilter === "gov" && site.isGov !== true) return false;
 
     // 검색어가 없으면 통과
     if (!tokens.length) return true;
@@ -1471,6 +1476,17 @@ function setupEventListeners() {
       });
     }
 
+    // 🔥 정부 필터
+    document.querySelectorAll("#govFilter .filter-btn").forEach(btn => {
+      manager.add(btn, "click", (e) => {
+        document.querySelectorAll("#govFilter .filter-btn").forEach(b => {
+          b.classList.remove("active");
+        });
+        e.currentTarget.classList.add("active");
+        setFilters({ currentGovFilter: e.currentTarget.dataset.gov }); // all | gov
+      });
+    });
+
     const darkToggle = document.getElementById("darkToggle");
     if (darkToggle) {
       manager.add(darkToggle, "click", () => {
@@ -1521,6 +1537,7 @@ function resetFilters() {
     currentAgeFilter: "all",
     currentCategoryFilter: "all",
     currentSubjectFilter: "all",
+    currentGovFilter: "all",
     currentSearchQuery: "",
     expandedCategories: {}
   }, { resetPages: true, render: true });
