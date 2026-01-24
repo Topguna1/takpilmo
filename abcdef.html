@@ -101,6 +101,7 @@
   <script src="js/ui/toast.js" defer></script>
   <script src="js/ui/theme.js" defer></script>
   <script src="js/ui/settings.js" defer></script>  
+  <script src="js/ui/menu.js" defer></script>
   <script src="js/render.js" defer></script>
   <script src="js/ui/ui-transition.js" defer></script>
   <script src="js/tabs.js" defer></script>
@@ -128,14 +129,10 @@
 </style>
 </head>
 <body>
-<div class="ui-scale-wrap">
+  <div class="ui-scale-wrap">
   <div class="container">
-    <div class="header">
-      <h1>🌟 딱필모</h1>
-      <p>어떤 사이트를 사용해야 할 지 모르는 당신을 위해서 딱 필요한 사이트 모음</p>
-    </div>
-    
     <div class="top-controls">
+      <h1 class="top-title">딱필모</h1>
       <div class="search-box">
         <input 
           id="searchInput" 
@@ -145,11 +142,37 @@
         <span class="search-icon">🔍</span>
         <div id="autocomplete-list" class="autocomplete-items"></div>
       </div>
-      <div class="filter-tabs" id="filterTabs"></div>
+      <p class="top-desc">어떤 사이트를 사용해야 할 지 모르는 당신을 위해서 딱 필요한 사이트 모음</p>
+      <details class="top-menu">
+        <summary>메뉴</summary>
+        <div class="top-menu-panel" role="menu">
+          <a href="#/about" class="top-menu-link" role="menuitem">사이트 소개</a>
+          <a
+            href="https://discord.gg/tvrsCf7b"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="top-menu-link"
+            role="menuitem"
+          >문의</a>
+        </div>
+      </details>
       <button class="dark-toggle" id="darkToggle">🌙 다크 모드</button>
     </div>
-    
-    <div class="filters">
+
+    <div class="content-layout">
+      <aside class="side-panel">
+        <div class="side-card">
+          <div class="side-card-header">
+            <span class="side-card-title">카테고리</span>
+          </div>
+          <div class="category-tabs">
+            <div class="filter-tabs" id="filterTabs"></div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <div class="filters">
       <div class="filter-group">
         <label>🎯 연령대</label>
         <div class="filter-buttons" id="ageFilter">
@@ -184,7 +207,7 @@
       </div>
 
       <div id="govFilter" class="filter-group">
-        <label>🏛️ 정부</label>
+        <label>🏛️ 정부 운영 선택</label>
         <div class="filter-buttons">
           <button type="button" class="filter-btn active" data-gov="all">전체</button>
           <button type="button" class="filter-btn" data-gov="gov">정부 운영</button>
@@ -233,6 +256,8 @@
     <h3>🔍 조건에 맞는 사이트가 없습니다</h3>
     <p>필터나 검색어를 변경해보세요.</p>
   </div>
+      </main>
+    </div>
   </div>
 </div>
 <!-- ✅ 상세 뷰 (해시 라우팅) -->
