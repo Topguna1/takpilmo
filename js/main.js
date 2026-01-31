@@ -2239,6 +2239,13 @@ function setupHashRouting() {
       const listWrap = document.querySelector(".ui-scale-wrap");
       if (listWrap) listWrap.style.display = "none";
 
+      // tipsView 숨기기
+      const tips = document.getElementById("tipsView");
+      if (tips) {
+        tips.style.display = "none";
+        tips.setAttribute("aria-hidden", "true");
+      }
+
       // aboutView 표시
       const about = document.getElementById("aboutView");
       if (about) {
@@ -2256,12 +2263,47 @@ function setupHashRouting() {
       return;
     }
 
+    // ✅ 1-2) Tips 페이지 처리
+    if (hash.startsWith("#/tips")) {
+      // 기존 뷰 숨기기
+      detailView.style.display = "none";
+      detailView.setAttribute("aria-hidden", "true");
 
-    // ✅ 소개가 아니면 소개 뷰는 무조건 닫기
+      const listWrap = document.querySelector(".ui-scale-wrap");
+      if (listWrap) listWrap.style.display = "none";
+
+      const about = document.getElementById("aboutView");
+      if (about) {
+        about.style.display = "none";
+        about.setAttribute("aria-hidden", "true");
+      }
+
+      // tipsView 표시
+      const tips = document.getElementById("tipsView");
+      if (tips) {
+        tips.style.display = "block";
+        tips.setAttribute("aria-hidden", "false");
+      }
+
+      // Tips 컨텐츠 렌더링 (tips.view.js에서 정의)
+      window.renderTipsView?.();
+
+      // Tips 진입 시 상단 고정
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
+
+
+    // ✅ 소개/팁이 아니면 해당 뷰들은 무조건 닫기
     const about = document.getElementById("aboutView");
     if (about) {
       about.style.display = "none";
       about.setAttribute("aria-hidden", "true");
+    }
+    const tips = document.getElementById("tipsView");
+    if (tips) {
+      tips.style.display = "none";
+      tips.setAttribute("aria-hidden", "true");
     }
     const listWrap = document.querySelector(".ui-scale-wrap");
     if (listWrap) listWrap.style.display = "";

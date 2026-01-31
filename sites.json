@@ -165,6 +165,7 @@
   {"key": "서울대공원 동물원", "name":"서울대공원 동물원", "url":"https://grandpark.seoul.go.kr/", "desc":"생물학 및 환경학 학습 체험", "category":"explore", "ages":["elem","mid"], "subjects":["science","social"], "isGov": true},
   {"key": "국립민속박물관", "name":"국립민속박물관", "url":"https://www.nfm.go.kr/", "desc":"한국 전통 문화 체험", "category":"explore", "ages":["elem","mid","high"], "subjects":["history","social"], "isGov": true},
   {"key": "국립중앙박물관", "name":"국립중앙박물관", "url":"https://www.museum.go.kr/", "desc":"역사·문화 체험 자료", "category":"explore", "ages":["elem","mid","high"], "subjects":["history","social"], "isGov": true},
+  {"key": "e-뮤지엄", "name":"e-뮤지엄", "url":"https://www.emuseum.go.kr/main", "desc":"전국 박물관 소장품 감상 가능", "category":"explore", "ages":["elem","mid","high"], "subjects":["science"], "isGov": true},
   {"key": "국립생태원", "name":"국립생태원", "url":"https://www.nie.re.kr/", "desc":"생태 체험 학습 자료", "category":"explore", "ages":["elem","mid","high"], "subjects":["science"], "isGov": true},
   {"key": "국립해양생물자원관", "name":"국립해양생물자원관", "url":"https://www.mabik.re.kr/", "desc":"해양 생물 탐구 및 자료 제공", "category":"explore", "ages":["elem","mid","high"], "subjects":["science"], "isGov": true}
 ]

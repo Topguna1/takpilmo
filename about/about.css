@@ -30,6 +30,11 @@ body.dark .about-hero2{
   z-index: 1;
   max-width: 900px;
   margin: 0 auto;
+  color: #1a1a2e;
+}
+
+body.dark .about-hero2__content {
+  color: #f8f9fa;
 }
 
 .about-badge-row{ 
@@ -75,11 +80,17 @@ body.dark .about-badge{
   margin: 0 0 40px;
   font-size: clamp(18px, 2vw, 24px);
   line-height: 1.6;
-  opacity: .85;
+  opacity: 1;
+  color: #2d3748;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
   font-weight: 400;
+}
+
+body.dark .about-lead {
+  color: #e2e8f0;
+  opacity: 0.95;
 }
 
 /* CTA 버튼 */
@@ -137,11 +148,15 @@ body.dark .about-btn2{
 }
 .about-stat .k{ 
   font-size: 14px; 
-  opacity: .7; 
-  font-weight: 600;
+  color: #475569;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+}
+
+body.dark .about-stat .k {
+  color: #94a3b8;
 }
 .about-stat .v{ 
   font-size: 42px; 
@@ -167,11 +182,15 @@ body.dark .about-btn2{
 .about-section2__head p{ 
   margin: 0 0 48px; 
   font-size: 18px;
-  opacity: .75; 
+  color: #475569;
   line-height: 1.6;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+}
+
+body.dark .about-section2__head p {
+  color: #94a3b8;
 }
 
 /* Grid - 3열 카드 */
@@ -214,21 +233,35 @@ body.dark .about-card2{
   font-size: 22px; 
   font-weight: 800;
   letter-spacing: -0.01em;
+  color: #1a1a2e;
 }
+
+body.dark .about-card2 h3 {
+  color: #f8f9fa;
+}
+
 .about-card2 p{ 
   margin: 0; 
-  opacity: .8; 
+  color: #475569;
   line-height: 1.7;
   font-size: 16px;
+}
+
+body.dark .about-card2 p {
+  color: #94a3b8;
 }
 .about-card2 ul.mini{ 
   margin: 20px 0 0; 
   padding-left: 0;
   list-style: none;
-  opacity: .75;
+  color: #475569;
   font-size: 14px;
   line-height: 1.8;
   text-align: left;
+}
+
+body.dark .about-card2 ul.mini {
+  color: #94a3b8;
 }
 .about-card2 ul.mini li:before{
   content: "✓ ";
@@ -270,13 +303,23 @@ body.dark .about-panel2{
   margin:0 0 20px; 
   font-size: 24px; 
   font-weight: 800;
+  color: #1a1a2e;
 }
+
+body.dark .about-panel2 h2 {
+  color: #f8f9fa;
+}
+
 .about-panel2 ul{ 
   margin:0; 
   padding-left: 24px; 
   line-height: 2; 
-  opacity:.85;
+  color: #475569;
   font-size: 16px;
+}
+
+body.dark .about-panel2 ul {
+  color: #94a3b8;
 }
 .about-panel2 ul li{
   margin-bottom: 8px;
@@ -325,12 +368,22 @@ body.dark .about-steps2 li{
   margin:0 0 8px; 
   font-size: 20px; 
   font-weight: 800;
+  color: #1a1a2e;
 }
+
+body.dark .about-steps2 h3 {
+  color: #f8f9fa;
+}
+
 .about-steps2 p{ 
   margin:0; 
-  opacity:.8; 
+  color: #475569;
   line-height:1.7;
   font-size: 16px;
+}
+
+body.dark .about-steps2 p {
+  color: #94a3b8;
 }
 
 /* Final CTA - 강조 */
@@ -353,11 +406,21 @@ body.dark .about-final__box{
   font-size: clamp(28px, 3vw, 40px);
   font-weight: 900;
   letter-spacing: -0.02em;
+  color: #1a1a2e;
 }
+
+body.dark .about-final__box h2 {
+  color: #f8f9fa;
+}
+
 .about-final__box p{ 
   margin:0 0 32px; 
-  opacity:.8;
+  color: #475569;
   font-size: 18px;
+}
+
+body.dark .about-final__box p {
+  color: #94a3b8;
 }
 
 /* Scroll Reveal */

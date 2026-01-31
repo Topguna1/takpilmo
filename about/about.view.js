@@ -145,7 +145,7 @@
           </ol>
         </section>
 
-        <footer class="about-final reveal">
+        <section class="about-final reveal">
           <div class="about-final__box">
             <h2>검색은 줄이고,<br>공부에 집중하세요</h2>
             <p>지금 바로 필요한 사이트를 찾아보세요</p>
@@ -153,10 +153,31 @@
               <a class="about-btn2 primary" href="#/">사이트 둘러보기</a>
             </div>
           </div>
-        </footer>
+        </section>
 
       </div>
     `;
+
+    // ✅ HTML 렌더링 완료 후 스크롤 (여러 방법 동시 적용)
+    // 방법 1: 즉시 스크롤
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    // 방법 2: 다음 프레임에 부드럽게 스크롤
+    requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // 방법 3: 약간의 지연 후 강제 스크롤
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 50);
   };
 
   window.fillAboutStats = function fillAboutStats() {

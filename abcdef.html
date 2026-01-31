@@ -91,6 +91,7 @@
 <title>🌟 딱필모 indev </title>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="about/about.css">
+<link rel="stylesheet" href="tips/tips.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
@@ -107,6 +108,7 @@
   <script src="js/tabs.js" defer></script>
   <script src="about/about.view.js" defer></script>
   <script src="about/about.reveal.js" defer></script>
+  <script src="tips/tips.view.js" defer></script>
   <script src="js/main.js" defer></script>
 
 
@@ -167,6 +169,23 @@
           </div>
           <div class="category-tabs">
             <div class="filter-tabs" id="filterTabs"></div>
+          </div>
+        </div>
+        
+        <!-- 자료 찾는 팁 섹션 -->
+        <div class="side-card" style="margin-top: 16px;">
+          <div class="side-card-header">
+            <span class="side-card-title">💡 도움말</span>
+          </div>
+          <div class="tips-section">
+            <a href="#/tips" class="tips-link">
+              <span class="tips-icon">📚</span>
+              <div class="tips-content">
+                <span class="tips-title">자료 찾는 팁</span>
+                <!-- <span class="tips-desc">효과적으로 자료를 검색하는 방법</span> -->
+              </div>
+              <span class="tips-arrow">→</span>
+            </a>
           </div>
         </div>
       </aside>
@@ -284,6 +303,8 @@
 </section>
 <!-- ✅ 상세 뷰 (해시 라우팅) 끝 -->
 <section id="aboutView" class="about-view" style="display:none;" aria-hidden="true"></section>
+<!-- Tips View -->
+<section id="tipsView" class="tips-view" style="display:none;" aria-hidden="true"></section>
 
 <footer style="
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);

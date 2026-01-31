@@ -1,0 +1,371 @@
+/* ==================== Tips Section (메인에서 보이는 작은 링크 카드 영역) ==================== */
+.tips-section {
+  padding: var(--space-2);
+}
+
+.tips-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--gradient-card);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  border: 1px solid var(--border-subtle);
+}
+
+.tips-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-500);
+}
+
+.tips-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* ✅ 링크 카드 안쪽 텍스트만 스코프 (tips 본문과 충돌 방지) */
+.tips-link .tips-link-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tips-link .tips-link-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.tips-link .tips-link-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tips-arrow {
+  color: var(--text-muted);
+  font-size: 18px;
+  transition: transform var(--transition-base);
+}
+
+.tips-link:hover .tips-arrow {
+  transform: translateX(4px);
+}
+
+/* ==================== Tips View (팁 페이지 전체 화면) ==================== */
+.tips-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.tips-layout {
+  min-height: 100vh;
+  background: var(--gradient-bg);
+  padding: var(--space-4);
+}
+
+/* ==================== 상단 헤더 ==================== */
+.tips-top-header {
+  max-width: 1400px;
+  margin: 0 auto var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.tips-page-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ==================== 메인 레이아웃: 좌측(과목 선택) + 우측(콘텐츠) ==================== */
+.tips-content-layout {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* ==================== 왼쪽 사이드바 ==================== */
+.tips-sidebar {
+  position: sticky;
+  top: 64px; /* 메인 페이지 side-panel처럼 */
+  align-self: start;
+}
+
+.tips-sidebar-card {
+  background: var(--gradient-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+.tips-sidebar-header {
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--border-subtle);
+  margin-bottom: var(--space-3);
+}
+
+.tips-sidebar-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.tips-sidebar-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tips-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background-color var(--transition-base), border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tips-tab:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-normal);
+  transform: translateX(4px);
+}
+
+.tips-tab.active {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  font-weight: 800;
+  box-shadow: var(--shadow-primary);
+}
+
+.tips-tab-emoji {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.tips-tab-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==================== 오른쪽 메인 콘텐츠 ==================== */
+.tips-main-content {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-subtle);
+  min-height: 600px;
+}
+
+.tips-header {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.tips-main-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tips-subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.tips-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ==================== Tip Cards ==================== */
+.tip-card {
+  background: var(--gradient-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.tip-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.tip-card-highlight {
+  background: linear-gradient(135deg, rgba(255, 243, 224, 0.5) 0%, rgba(255, 235, 205, 0.5) 100%);
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+body.dark .tip-card-highlight {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%);
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+.tip-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tip-list li {
+  padding-left: var(--space-6);
+  position: relative;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.tip-list li::before {
+  content: "•";
+  position: absolute;
+  left: var(--space-3);
+  color: var(--primary-500);
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.tip-list li strong {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+/* ==================== 반응형 (태블릿) ==================== */
+@media (max-width: 1024px) {
+  .tips-content-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .tips-main-content {
+    padding: var(--space-6);
+  }
+}
+
+/* ==================== 반응형 (모바일) ==================== */
+@media (max-width: 768px) {
+  .tips-layout {
+    padding: var(--space-3);
+  }
+
+  .tips-content-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .tips-sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .tips-sidebar-card {
+    padding: var(--space-3);
+  }
+
+  .tips-sidebar-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .tips-tab {
+    transform: none;
+    padding: var(--space-3);
+  }
+
+  .tips-tab:hover {
+    transform: none;
+  }
+
+  .tips-main-content {
+    padding: var(--space-4);
+  }
+
+  .tips-page-title {
+    font-size: 22px;
+  }
+
+  .tips-main-title {
+    font-size: 24px;
+  }
+
+  .tips-subtitle {
+    font-size: 14px;
+  }
+
+  .tip-card {
+    padding: var(--space-4);
+  }
+
+  .tip-title {
+    font-size: 18px;
+  }
+
+  .tips-content {
+    gap: var(--space-4);
+  }
+}
+
+/* ==================== 애니메이션 비활성화 ==================== */
+body.anim-off .tips-link,
+body.anim-off .tip-card,
+body.anim-off .tips-tab {
+  transition: none !important;
+}
+
+body.anim-off .tips-link:hover,
+body.anim-off .tip-card:hover,
+body.anim-off .tips-tab:hover {
+  transform: none !important;
+}
