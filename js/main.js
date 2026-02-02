@@ -2084,9 +2084,7 @@ function setupHashRouting() {
     // 스크롤 위치 초기화는 필요 시 주석 해제
     // window.scrollTo({ top: 0, behavior: 'auto' });
     // display 복구 직후, 한 프레임 뒤 복원 (레이아웃 복구 후 스크롤)
-    if (savedScrollY > 0) {
-      requestAnimationFrame(() => window.scrollTo({ top: savedScrollY, behavior: "auto" }));
-    }
+    requestAnimationFrame(() => window.scrollTo({ top: savedScrollY || 0, behavior: "auto" }));
   }
 
   // 2) 상세 보기 (목록 숨김)
@@ -2239,13 +2237,6 @@ function setupHashRouting() {
       const listWrap = document.querySelector(".ui-scale-wrap");
       if (listWrap) listWrap.style.display = "none";
 
-      // tipsView 숨기기
-      const tips = document.getElementById("tipsView");
-      if (tips) {
-        tips.style.display = "none";
-        tips.setAttribute("aria-hidden", "true");
-      }
-
       // aboutView 표시
       const about = document.getElementById("aboutView");
       if (about) {
@@ -2262,10 +2253,8 @@ function setupHashRouting() {
       window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
-
-    // ✅ 1-2) Tips 페이지 처리
+    // 1-2) Tips 페이지 처리
     if (hash.startsWith("#/tips")) {
-      // 기존 뷰 숨기기
       detailView.style.display = "none";
       detailView.setAttribute("aria-hidden", "true");
 
@@ -2278,23 +2267,19 @@ function setupHashRouting() {
         about.setAttribute("aria-hidden", "true");
       }
 
-      // tipsView 표시
       const tips = document.getElementById("tipsView");
       if (tips) {
         tips.style.display = "block";
         tips.setAttribute("aria-hidden", "false");
       }
 
-      // Tips 컨텐츠 렌더링 (tips.view.js에서 정의)
       window.renderTipsView?.();
-
-      // Tips 진입 시 상단 고정
       window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
 
 
-    // ✅ 소개/팁이 아니면 해당 뷰들은 무조건 닫기
+    // ✅ 소개가 아니면 소개 뷰는 무조건 닫기
     const about = document.getElementById("aboutView");
     if (about) {
       about.style.display = "none";

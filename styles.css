@@ -1,4 +1,4 @@
-﻿/* ==================== CSS 변수 (통합 및 최적화) ==================== */
+/* ==================== CSS 변수 (통합 및 최적화) ==================== */
 :root {
   /* 색상 팔레트 */
   --primary-500: #667eea;
@@ -96,12 +96,10 @@ body.dark {
   padding: 0;
   box-sizing: border-box;
 }
-
 html {
   height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-y: hidden;
 }
 
 body {
@@ -110,8 +108,6 @@ body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--text-primary);
   overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   transition: color var(--transition-slow);
@@ -859,6 +855,7 @@ body.dark .scroll-fab {
 }
 
 /* ==================== 상세 뷰 ==================== */
+
 .detail-view {
   padding: var(--space-8);
 }
