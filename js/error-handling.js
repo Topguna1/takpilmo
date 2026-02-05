@@ -348,36 +348,26 @@
 
   // 향상된 초성 추출 함수
   function getChosungSafe(str) {
-    if (!str || typeof str !== 'string') return '';
-    
-    const CHOSUNG_LIST = [
-      "ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ",
-      "ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"
-    ];
-    
+    if (!str || typeof str !== "string") return "";
+    const CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
     let result = "";
-    
     try {
       for (let i = 0; i < str.length; i++) {
         const code = str.charCodeAt(i) - 44032;
         if (code >= 0 && code <= 11171) {
-          const chosungIndex = Math.floor(code / 588);
-          if (chosungIndex >= 0 && chosungIndex < CHOSUNG_LIST.length) {
-            result += CHOSUNG_LIST[chosungIndex];
-          }
+          result += CHO[Math.floor(code / 588)] || "";
         } else {
           result += str[i];
         }
       }
     } catch (error) {
-      console.warn('getChosung 오류:', error);
-      return str;
+      console.warn("getChosungSafe 오류:", error);
+      return String(str);
     }
-    
     return result;
   }
 
-  // ==================== 4. 강화된 사이트 카드 생성 함수 ====================
+// ==================== 4. 강화된 사이트 카드 생성 함수 ====================
   function createSiteCardWithErrorHandling(site) {
     try {
       const card = document.createElement("div");

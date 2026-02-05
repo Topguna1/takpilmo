@@ -60,3 +60,13 @@ function getChosung(str) {
 window.escapeHtml = escapeHtml;
 window.debounce = debounce;
 window.getChosung = getChosung;
+
+
+// ✅ 네임스페이스 유틸 단일 소스(SSOT)
+window.ddakpilmo = window.ddakpilmo || {};
+window.ddakpilmo.utils = window.ddakpilmo.utils || {};
+window.ddakpilmo.utils.escapeHtml = escapeHtml;
+window.ddakpilmo.utils.debounce = debounce;
+window.ddakpilmo.utils.getChosung = getChosung;
+window.ddakpilmo.escapeHtml = escapeHtml;
+window.ddakpilmo.getChosung = getChosung;

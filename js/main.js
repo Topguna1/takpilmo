@@ -155,10 +155,87 @@ function setPage(category, page, scrollY = 800) {
   setState({ currentPageByCategory: next }, { resetPages: false, render: true });
 
   // 렌더 후 스크롤로 통일
+  function smoothScrollToElement(target, duration = 900) {
+    if (!target) return;
+    if (document.body.classList.contains("anim-off")) {
+      target.scrollIntoView({ block: "start", behavior: "auto" });
+      return;
+    }
+
+    const startY = window.scrollY || 0;
+    const targetY = target.getBoundingClientRect().top + startY;
+    const distance = targetY - startY;
+    const startTime = performance.now();
+    let cancelled = false;
+
+    function cancelOnUserScroll() {
+      cancelled = true;
+      removeCancelListeners();
+    }
+
+    function addCancelListeners() {
+      const manager = window.memoryManager?.eventManager;
+      if (manager) {
+        manager.add(window, "wheel", cancelOnUserScroll, { passive: true });
+        manager.add(window, "touchstart", cancelOnUserScroll, { passive: true });
+        manager.add(window, "keydown", cancelOnUserScroll, { passive: true });
+      } else {
+        window.addEventListener("wheel", cancelOnUserScroll, { passive: true });
+        window.addEventListener("touchstart", cancelOnUserScroll, { passive: true });
+        window.addEventListener("keydown", cancelOnUserScroll, { passive: true });
+      }
+    }
+
+    function removeCancelListeners() {
+      const manager = window.memoryManager?.eventManager;
+      if (manager?.remove) {
+        manager.remove(window, "wheel", cancelOnUserScroll);
+        manager.remove(window, "touchstart", cancelOnUserScroll);
+        manager.remove(window, "keydown", cancelOnUserScroll);
+      } else {
+        window.removeEventListener("wheel", cancelOnUserScroll);
+        window.removeEventListener("touchstart", cancelOnUserScroll);
+        window.removeEventListener("keydown", cancelOnUserScroll);
+      }
+    }
+
+    addCancelListeners();
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function step() {
+      if (cancelled) return;
+      const now = performance.now();
+      const time = Math.min(1, (now - startTime) / duration);
+      const eased = easeInOutCubic(time);
+      window.scrollTo(0, startY + distance * eased);
+      if (time < 1) {
+        requestAnimationFrame(step);
+      } else {
+        removeCancelListeners();
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  const doScroll = () => {
+    const section = document.getElementById(`${category}-section`);
+    const header = section?.querySelector?.(".category-header");
+    const target = header || section;
+    smoothScrollToElement(target, 1100);
+  };
+
   if (typeof afterNextRender === "function") {
-    afterNextRender(() => smoothScrollToCategory(category, scrollY));
+    afterNextRender(() => {
+      doScroll();
+      setTimeout(doScroll, 0);
+    });
   } else {
-    smoothScrollToCategory(category, scrollY);
+    doScroll();
+    setTimeout(doScroll, 0);
   }
 }
 // 🔧 3. 검색 결과 캐싱 활용
@@ -201,13 +278,13 @@ function getFilteredSitesWithCache() {
     const tokens = q.split(/\s+/).filter(t => t.length > 0);
 
     return tokens.every(token => {
-      const tokenChosung = getChosung(token).toLowerCase();
+      const tokenChosung = safeGetChosung(token).toLowerCase();
       const siteChosung = (site.chosungFull || "").toLowerCase();
 
       if (searchTarget.includes(token)) return true;
       if (siteChosung.includes(token)) return true;
       if (siteChosung.includes(tokenChosung)) return true;
-      if (getChosung(site.name).toLowerCase().includes(tokenChosung)) return true;
+      if (safeGetChosung(site.name).toLowerCase().includes(tokenChosung)) return true;
 
       return false;
     });
@@ -533,21 +610,21 @@ function isChosungOnly(q) {
 
 // getChosung이 외부에 없을 수도 있으니 안전 fallback
 function safeGetChosung(str) {
+  const fn = window.ddakpilmo?.utils?.getChosung || window.getChosung;
   try {
-    if (typeof window.getChosung === "function") return window.getChosung(str) || "";
+    if (typeof fn === "function") return fn(str);
   } catch {}
-  // fallback: 완성형에서 초성만 추출
-  str = String(str ?? "");
+  // fallback: 완성형에서 초성(호환 자모) 추출
+  const CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+  const s = String(str ?? "");
   let out = "";
-  for (let i = 0; i < str.length; i++) {
-    const ch = str.charCodeAt(i);
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charCodeAt(i);
     if (ch >= 0xac00 && ch <= 0xd7a3) {
       const code = ch - 0xac00;
-      const cho = Math.floor(code / 588);
-      out += __CHO[cho] || "";
-    } else if (ch >= 0x3131 && ch <= 0x314e) {
-      // 이미 초성 자모면 그대로
-      out += str[i];
+      out += CHO[Math.floor(code / 588)] || "";
+    } else {
+      out += s[i];
     }
   }
   return out;
@@ -1652,8 +1729,8 @@ async function loadDetailsFromSheet({ cacheMinutes = 60 } = {}) {
 async function loadJSONData() {
   try {
     const [categoriesRes, sitesRes] = await Promise.all([
-      fetch("categories.json"),
-      fetch("sites.json")
+      fetch("data/categories.json"),
+      fetch("data/sites.json")
     ]);
 
     if (!categoriesRes.ok || !sitesRes.ok) {
@@ -1723,8 +1800,8 @@ function init() {
     // 외부 데이터 확인 및 안전한 초기화
     if (typeof initialSites !== 'undefined' && Array.isArray(initialSites)) {
       state.sites = initialSites.map(site => {
-        const nameCh = getChosung(site.name || "");
-        const descCh = getChosung(site.desc || "");
+        const nameCh = safeGetChosung(site.name || "");
+        const descCh = safeGetChosung(site.desc || "");
         try {
           const url = site.url || "";
           // 🔎 정부 도메인 자동 감지 (.go.kr, gov.kr)
@@ -1783,9 +1860,9 @@ function init() {
             ages: Array.isArray(site.ages) ? site.ages : ["adult"],
             subjects: Array.isArray(site.subjects) ? site.subjects : ["general"],
             isGov: false,
-            chosungName: getChosung(site.name || ""),
-            chosungDesc: getChosung(site.desc || ""),
-            chosungFull: getChosung(site.name || "") + " " + getChosung(site.desc || "")
+            chosungName: safeGetChosung(site.name || ""),
+            chosungDesc: safeGetChosung(site.desc || ""),
+            chosungFull: safeGetChosung(site.name || "") + " " + safeGetChosung(site.desc || "")
           };
         }
       });
@@ -2054,6 +2131,13 @@ function setupHashRouting() {
   }
 
   // 데이터 인덱스 생성
+  // Prevent browser auto scroll restoration from overriding our saved position
+  try {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+  } catch {}
+
   let siteIndex = buildSiteIndex();
   // ✅ siteIndex는 매 라우팅마다 재생성하지 말고, 데이터가 바뀌었을 때만 갱신
   let _siteIndexSitesRef = getAllSites();
@@ -2075,6 +2159,16 @@ function setupHashRouting() {
   // === 화면 전환 함수 ===
   
   // 1) 목록 보기 (상세 뷰 숨김)
+  function restoreListScroll() {
+    const y = Number.isFinite(savedScrollY) ? savedScrollY : 0;
+    const restore = () => window.scrollTo({ top: y, behavior: "auto" });
+    requestAnimationFrame(() => {
+      restore();
+      setTimeout(restore, 0);
+      setTimeout(restore, 50);
+    });
+  }
+
   function showList() {
     detailView.style.display = 'none'; // 상세 숨김
     detailView.setAttribute('aria-hidden', 'true');
@@ -2084,7 +2178,10 @@ function setupHashRouting() {
     // 스크롤 위치 초기화는 필요 시 주석 해제
     // window.scrollTo({ top: 0, behavior: 'auto' });
     // display 복구 직후, 한 프레임 뒤 복원 (레이아웃 복구 후 스크롤)
-    requestAnimationFrame(() => window.scrollTo({ top: savedScrollY || 0, behavior: "auto" }));
+    restoreListScroll();
+    if (typeof afterNextRender === "function") {
+      afterNextRender(restoreListScroll);
+    }
   }
 
   // 2) 상세 보기 (목록 숨김)
@@ -2237,6 +2334,13 @@ function setupHashRouting() {
       const listWrap = document.querySelector(".ui-scale-wrap");
       if (listWrap) listWrap.style.display = "none";
 
+      // tipsView 숨기기
+      const tips = document.getElementById("tipsView");
+      if (tips) {
+        tips.style.display = "none";
+        tips.setAttribute("aria-hidden", "true");
+      }
+
       // aboutView 표시
       const about = document.getElementById("aboutView");
       if (about) {
@@ -2253,8 +2357,10 @@ function setupHashRouting() {
       window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
-    // 1-2) Tips 페이지 처리
+
+    // ✅ 1-2) Tips 페이지 처리
     if (hash.startsWith("#/tips")) {
+      // 기존 뷰 숨기기
       detailView.style.display = "none";
       detailView.setAttribute("aria-hidden", "true");
 
@@ -2267,19 +2373,23 @@ function setupHashRouting() {
         about.setAttribute("aria-hidden", "true");
       }
 
+      // tipsView 표시
       const tips = document.getElementById("tipsView");
       if (tips) {
         tips.style.display = "block";
         tips.setAttribute("aria-hidden", "false");
       }
 
+      // Tips 컨텐츠 렌더링 (tips.view.js에서 정의)
       window.renderTipsView?.();
+
+      // Tips 진입 시 상단 고정
       window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
 
 
-    // ✅ 소개가 아니면 소개 뷰는 무조건 닫기
+    // ✅ 소개/팁이 아니면 해당 뷰들은 무조건 닫기
     const about = document.getElementById("aboutView");
     if (about) {
       about.style.display = "none";

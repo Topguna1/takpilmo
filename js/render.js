@@ -177,7 +177,7 @@
 
       // 6. 검색어 하이라이트 (ddakHighlight 라이브러리 연동)
       try {
-        const q = (window.state?.currentSearchQuery || document.getElementById('searchInput')?.value || '').trim();
+        const q = (window.state?.currentSearchQuery || '').trim();
         const scope = document.getElementById('categoriesContainer');
         if (window.ddakHighlight && scope) {
            if (q) window.ddakHighlight.apply(q, scope);
