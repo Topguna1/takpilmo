@@ -204,27 +204,9 @@ function setupHashRouting() {
     // --- 관련 추천 사이트 로직 ---
     relatedEl.innerHTML = '';
     const all = getAllSites();
-    
-    // 추천 알고리즘: 같은 과목 > 같은 카테고리 순으로 점수 부여
-    const rel = all
-      .filter(x => x && (x.id || x.name) && x.id !== site.id) // 자기 자신 제외
-      .map(x => {
-        let score = 0;
-        // 카테고리 일치 시 1점
-        if (site.category && x.category === site.category) score += 1;
-        
-        // 과목 일치 시 2점 (배열 교집합 확인)
-        const siteSubs = Array.isArray(site.subjects) ? site.subjects : [];
-        const xSubs = Array.isArray(x.subjects) ? x.subjects : [];
-        const hasCommon = siteSubs.some(s => xSubs.includes(s));
-        if (hasCommon) score += 2;
-
-        return { item: x, score: score };
-      })
-      .filter(o => o.score > 0) // 연관성 있는 것만
-      .sort((a, b) => b.score - a.score) // 점수 높은 순 정렬
-      .slice(0, 6) // 최대 n개만 노출
-      .map(o => o.item);
+    const rel = typeof window.getRelatedSites === "function"
+      ? window.getRelatedSites(site, all, { limit: 6 })
+      : [];
 
     if (rel.length === 0) {
         relatedEl.innerHTML = '<p style="color:#999; font-size:14px;">관련된 추천 사이트가 없습니다.</p>';

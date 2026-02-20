@@ -709,24 +709,4 @@ function enhanceItemWithSiteLink(item, urlMap) {
 
   // 전역으로 노출
   window.renderTipsView = renderTipsView;
-
-  // hashchange 이벤트로 URL 변경 감지
-  window.addEventListener('hashchange', function() {
-    const hash = window.location.hash;
-    if (hash.startsWith('#/tips')) {
-      // tips 페이지 내에서 과목 변경 시 다시 렌더링
-      const tipsView = document.getElementById('tipsView');
-      if (tipsView && tipsView.style.display !== 'none') {
-        tipsView.dataset.rendered = 'false'; // 재렌더링 허용
-        renderTipsView();
-      }
-    }
-  });
-
-  // 초기 로드 시 실행
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderTipsView);
-  } else {
-    renderTipsView();
-  }
 })();

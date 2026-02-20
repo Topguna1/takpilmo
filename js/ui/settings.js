@@ -145,23 +145,3 @@ function setupSettingsPanel() {
 // ✅ 전역 노출
 window.setupSettingsPanel = setupSettingsPanel;
 
-function applyAllSettingsFromStorage(defaults = { theme: "system", font: "normal", anim: "on", radius: "round" }) {
-  const s = { ...defaults };
-
-  try { s.theme = localStorage.getItem("siteTheme") || s.theme; } catch {}
-  try { s.font  = localStorage.getItem("siteFontSize") || s.font; } catch {}
-  try { s.anim  = localStorage.getItem("siteAnim") || s.anim; } catch {}
-  try { s.radius = localStorage.getItem("siteRadius") || s.radius; } catch {}
-
-  // radius 값 보정(예전 sharp 쓰던 흔적 있으면 교정)
-  if (s.radius === "sharp") s.radius = "square";
-
-  window.applyTheme?.(s.theme);
-  window.applyFontSize?.(s.font);
-  window.applyAnimation?.(s.anim);
-  window.applyRadius?.(s.radius);
-
-  return s;
-}
-
-window.applyAllSettingsFromStorage = applyAllSettingsFromStorage;

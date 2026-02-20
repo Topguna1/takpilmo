@@ -141,8 +141,7 @@
     const frag = document.createDocumentFragment();
 
     for (const site of sitesSlice) {
-      const make = window.ddakpilmo?.createSiteCardSafe || window.createSiteCard;
-      const card = make(site);
+      const card = createSiteCard(site);
 
       if (site?.id) card.dataset.id = site.id;
 

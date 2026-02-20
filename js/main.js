@@ -132,180 +132,7 @@ window.handleDataLoadFailure = handleDataLoadFailure;
 
 
 // ==================== 검색 하이라이트 기능 ====================
-function highlightSearchTerms(text, query) {
-  const raw = String(text ?? "");
-  const q = String(query ?? "").trim();
-  if (!q) return escapeHtml(raw);
 
-  // ---- helpers ----
-  const esc = (s) => (typeof escapeHtml === "function" ? escapeHtml(s) : String(s)
-    .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;").replaceAll("'", "&#039;"));
-
-  const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const isChoOnly = (s) => /^[ㄱ-ㅎ]+$/.test(s);
-  const isJamoLike = (s) => /[ㄱ-ㅎㅏ-ㅣ]/.test(s); // 자모가 하나라도 포함되면
-
-  // 완성형 → 초성
-  const CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-  function getInitials(str) {
-    let out = "";
-    for (let i = 0; i < str.length; i++) {
-      const code = str.charCodeAt(i);
-      if (code >= 0xac00 && code <= 0xd7a3) out += CHO[Math.floor((code - 0xac00) / 588)] || "";
-      else out += " "; // 한글이 아니면 공백 처리(연속 매칭 방해)
-    }
-    return out;
-  }
-
-  // 완성형 → 자모 + (자모 인덱스 ↔ 원문 인덱스) 매핑
-  const JUNG = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅗ","ㅘ","ㅙ","ㅚ","ㅛ","ㅜ","ㅝ","ㅞ","ㅟ","ㅠ","ㅡ","ㅢ","ㅣ"];
-  const JONG = ["", "ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-  function buildJamoMap(str) {
-    let jamo = "";
-    const map = []; // jamoIndex -> originalCharIndex
-    for (let i = 0; i < str.length; i++) {
-      const code = str.charCodeAt(i);
-      if (code >= 0xac00 && code <= 0xd7a3) {
-        const v = code - 0xac00;
-        const cho = Math.floor(v / 588);
-        const jung = Math.floor((v % 588) / 28);
-        const jong = v % 28;
-        const parts = [CHO[cho], JUNG[jung]];
-        if (JONG[jong]) parts.push(JONG[jong]);
-        for (const p of parts) {
-          jamo += p;
-          map.push(i);
-        }
-      } else {
-        // 비한글은 그대로 한 글자 취급(매핑 유지)
-        const ch = str[i];
-        jamo += ch;
-        map.push(i);
-      }
-    }
-    return { jamo: jamo.toLowerCase(), map };
-  }
-
-  // 하이라이트 범위(원문 인덱스 기반) 수집 후 병합
-  function mergeRanges(ranges) {
-    if (!ranges.length) return [];
-    ranges.sort((a,b) => a[0]-b[0] || a[1]-b[1]);
-    const out = [ranges[0]];
-    for (let i = 1; i < ranges.length; i++) {
-      const [s,e] = ranges[i];
-      const last = out[out.length-1];
-      if (s <= last[1]) last[1] = Math.max(last[1], e);
-      else out.push([s,e]);
-    }
-    return out;
-  }
-
-  function applyRanges(str, ranges) {
-    if (!ranges.length) return esc(str);
-    const merged = mergeRanges(ranges);
-    let out = "";
-    let idx = 0;
-    for (const [s,e] of merged) {
-      if (s > idx) out += esc(str.slice(idx, s));
-      out += `<span class="search-highlight">${esc(str.slice(s, e))}</span>`;
-      idx = e;
-    }
-    if (idx < str.length) out += esc(str.slice(idx));
-    return out;
-  }
-
-  // ---- tokenize ----
-  const tokens = q.split(/\s+/).filter(Boolean);
-  if (!tokens.length) return esc(raw);
-
-  const lowerRaw = raw.toLowerCase();
-  const ranges = [];
-
-  // 1) 완성형/일반 토큰은 기존처럼 직접 매칭
-  for (const t of tokens) {
-    if (!t) continue;
-    // 자모/초성 토큰은 아래 전용 로직에서 처리
-    if (isChoOnly(t) || isJamoLike(t)) continue;
-
-    const re = new RegExp(escapeRegExp(t), "gi");
-    let m;
-    while ((m = re.exec(raw)) !== null) {
-      ranges.push([m.index, m.index + m[0].length]);
-      if (re.lastIndex === m.index) re.lastIndex++;
-    }
-  }
-
-  // 2) 초성-only 토큰: 연속 음절 범위 하이라이트
-  // 예) "ㄴㅇㅂ" -> "네이버" 3글자 범위
-  const initials = getInitials(raw).toLowerCase(); // 비한글은 공백
-  for (const t of tokens) {
-    if (!isChoOnly(t)) continue;
-    const needle = t.toLowerCase();
-    let start = 0;
-    while (true) {
-      const idx = initials.indexOf(needle, start);
-      if (idx === -1) break;
-      // idx는 "문자 인덱스" 기준(초성 문자열 길이 = 원문 길이)
-      ranges.push([idx, idx + needle.length]);
-      start = idx + 1;
-    }
-  }
-
-  // 3) 자모 토큰: 자모 문자열에서 매칭 → 원문 인덱스로 역매핑
-  // 예) "ㄴㅔㅇ" -> "네이" 범위
-  const { jamo, map } = buildJamoMap(raw);
-  for (const t of tokens) {
-    if (!(isJamoLike(t) && !isChoOnly(t))) continue;
-    const needle = t.toLowerCase();
-    let start = 0;
-    while (true) {
-      const jIdx = jamo.indexOf(needle, start);
-      if (jIdx === -1) break;
-
-      const from = map[jIdx];
-      const to = map[jIdx + needle.length - 1];
-      if (from != null && to != null) {
-        ranges.push([from, to + 1]); // 원문 slice end는 +1
-      }
-      start = jIdx + 1;
-    }
-  }
-
-  // 범위 적용
-  return applyRanges(raw, ranges);
-}
-
-function makeSearchSnippet(text, query, radius = 36) {
-  const raw = String(text ?? "");
-  const q = String(query ?? "").trim();
-  if (!q || !raw) return escapeHtml(raw);
-
-  const tokens = q.split(/\s+/).filter(Boolean);
-  const lower = raw.toLowerCase();
-
-  let hit = -1;
-  for (const t of tokens) {
-    // 초성/자모 토큰은 원문에 그대로 없을 수 있으니 스니펫 기준 제외
-    if (/^[ㄱ-ㅎ]+$/.test(t) || /[ㄱ-ㅎㅏ-ㅣ]/.test(t)) continue;
-    hit = lower.indexOf(t.toLowerCase());
-    if (hit !== -1) break;
-  }
-
-  if (hit === -1) {
-    const cut = raw.length > radius * 2 ? raw.slice(0, radius * 2) + "…" : raw;
-    return highlightSearchTerms(cut, q);
-  }
-
-  const start = Math.max(0, hit - radius);
-  const end = Math.min(raw.length, hit + radius);
-
-  let snippet = raw.slice(start, end);
-  if (start > 0) snippet = "…" + snippet;
-  if (end < raw.length) snippet = snippet + "…";
-
-  return highlightSearchTerms(snippet, q);
-}
 
 
 // ==================== 데이터 접근 함수들 ====================
@@ -435,27 +262,8 @@ function updateCategoryPagingMode() {
 
 // ==================== 이벤트 리스너 설정 ====================
 // ==================== Settings: 단일 Source of Truth ====================
-state.settings = state.settings || { theme: "system", font: "normal", anim: "on", radius: "round" };
 
-function loadSettingsFromStorage() {
-  try {
-    const raw = localStorage.getItem("siteSettings");
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") {
-      state.settings = { ...state.settings, ...parsed };
-    }
-  } catch {}
-  window.state = state;
-}
 
-function applyAllSettings() {
-  const s = state.settings || {};
-  window.applyTheme?.(s.theme);
-  window.applyFontSize?.(s.font);
-  window.applyAnimation?.(s.anim);
-  window.applyRadius?.(s.radius);
-}
 
 // ==================== 초기화 함수 ====================
 function init() {
@@ -466,10 +274,6 @@ function init() {
   __legacyInitStarted = true;
   console.log("🌟 딱필모 안전 초기화 시작...");
   window.buildCategoryTabs?.();
-  loadSettingsFromStorage();
-  applyAllSettings();
-  applyAllSettingsFromStorage();
-
   
   try {
     // 오류 처리 시스템 확인
