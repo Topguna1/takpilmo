@@ -193,6 +193,12 @@ body.dark .about-section2__head p {
   color: #94a3b8;
 }
 
+/* Light mode contrast boost for section subtitles on gradient background */
+body:not(.dark) .about-section2__head p {
+  color: #334155;
+  font-weight: 500;
+}
+
 /* Grid - 3열 카드 */
 .about-grid3{
   display:grid;
@@ -276,6 +282,20 @@ body.dark .about-card2 ul.mini {
 body.dark .about-card2.accent{
   background: rgba(102,126,234,0.08);
   border-color: rgba(102,126,234,0.15);
+}
+
+/* Light mode: keep principle cards readable over colorful background */
+body:not(.dark) #principles .about-card2.accent{
+  background: rgba(255,255,255,0.94);
+  border-color: rgba(51,65,85,0.14);
+}
+
+body:not(.dark) #principles .about-card2.accent h3{
+  color: #0f172a;
+}
+
+body:not(.dark) #principles .about-card2.accent p{
+  color: #334155;
 }
 
 /* Split panels - 2열 비교 */
@@ -384,6 +404,20 @@ body.dark .about-steps2 h3 {
 
 body.dark .about-steps2 p {
   color: #94a3b8;
+}
+
+/* Light mode: improve readability in "사용 방법" step cards */
+body:not(.dark) #how .about-steps2 li{
+  background: rgba(255,255,255,0.96);
+  border-color: rgba(51,65,85,0.14);
+}
+
+body:not(.dark) #how .about-steps2 h3{
+  color: #0f172a;
+}
+
+body:not(.dark) #how .about-steps2 p{
+  color: #334155;
 }
 
 /* Final CTA - 강조 */

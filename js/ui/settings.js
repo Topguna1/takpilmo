@@ -22,12 +22,12 @@ function setupSettingsPanel() {
   // ✅ 단일 Source of Truth
   if (!window.state) window.state = {};
   if (!window.state.settings) {
-    window.state.settings = { theme: "system", font: "normal", anim: "on", radius: "round" };
+    window.state.settings = { theme: "dark", font: "normal", anim: "on", radius: "round" };
   }
 
   // ✅ 저장값 로드: (구버전 키 + siteSettings 둘 다 호환)
   function loadSettings() {
-    const base = { theme: "system", font: "normal", anim: "on", radius: "round" };
+    const base = { theme: "dark", font: "normal", anim: "on", radius: "round" };
     try {
       // 1) 묶음 저장(siteSettings) 우선
       const raw = localStorage.getItem("siteSettings");
@@ -135,7 +135,7 @@ function setupSettingsPanel() {
 
   // 기본값으로 초기화
   add(resetBtn, "click", () => {
-    window.state.settings = { theme: "system", font: "normal", anim: "on", radius: "round" };
+    window.state.settings = { theme: "dark", font: "normal", anim: "on", radius: "round" };
     applyAll();
     syncUI();
   });

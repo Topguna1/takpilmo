@@ -1,3 +1,66 @@
+function updateSelectedFiltersSummary() {
+  const host = document.getElementById("activeFilterSummary");
+  if (!host) return;
+
+  const refs = window.state || {};
+  const ageMap = window.ageNames || {};
+  const subjectMap = window.subjectNames || {};
+  const getCategoryNameSafe =
+    window.getCategoryName ||
+    window.ddakpilmo?.config?.getCategoryName ||
+    ((key) => String(key || ""));
+  const escapeHtmlSafe =
+    window.ddakpilmo?.utils?.escapeHtml ||
+    window.escapeHtml ||
+    ((value) => String(value ?? ""));
+
+  const ageKey = refs.currentAgeFilter || "all";
+  const subjectKey = refs.currentSubjectFilter || "all";
+  const categoryKey = refs.currentCategoryFilter || "all";
+  const govKey = refs.currentGovFilter || "all";
+
+  const chips = [
+    {
+      label: "\uC5F0\uB839\uB300",
+      value: ageKey === "all" ? "\uC804\uCCB4" : (ageMap[ageKey] || ageKey),
+      isAll: ageKey === "all",
+    },
+    {
+      label: "\uACFC\uBAA9",
+      value:
+        subjectKey === "all"
+          ? "\uC804\uCCB4 \uACFC\uBAA9"
+          : (subjectMap[subjectKey] || subjectKey),
+      isAll: subjectKey === "all",
+    },
+    {
+      label: "\uCE74\uD14C\uACE0\uB9AC",
+      value:
+        categoryKey === "all"
+          ? "\uC804\uCCB4"
+          : getCategoryNameSafe(categoryKey),
+      isAll: categoryKey === "all",
+    },
+    {
+      label: "\uC815\uBD80 \uC6B4\uC601",
+      value: govKey === "all" ? "\uC804\uCCB4" : "\uC815\uBD80 \uC6B4\uC601",
+      isAll: govKey === "all",
+    },
+  ];
+
+  const title = '<span class="active-filter-summary-title">✅ \uC120\uD0DD\uB41C \uD544\uD130</span>';
+  const chipHtml = chips
+    .map((chip) => {
+      const chipClass = chip.isAll ? "active-filter-chip is-all" : "active-filter-chip is-active";
+      return `<span class="${chipClass}"><span class="chip-label">${escapeHtmlSafe(chip.label)}</span><strong class="chip-value">${escapeHtmlSafe(chip.value)}</strong></span>`;
+    })
+    .join("");
+
+  host.innerHTML = title + chipHtml;
+}
+
+window.updateSelectedFiltersSummary = updateSelectedFiltersSummary;
+
 // ==================== 이벤트 리스너 설정 ====================
 function setupEventListeners() {
   if (setupEventListeners.__initialized) {
@@ -19,6 +82,7 @@ function setupEventListeners() {
       }
     }
     setupEventListeners.__initialized = true;
+    updateSelectedFiltersSummary();
     return;
   }
 
@@ -264,6 +328,7 @@ function setupEventListeners() {
         });
         e.currentTarget.classList.add("active");
         setFilters({ currentAgeFilter: e.currentTarget.dataset.age });
+        updateSelectedFiltersSummary();
       });
     });
 
@@ -271,6 +336,7 @@ function setupEventListeners() {
     if (subjectFilter) {
       manager.add(subjectFilter, "change", (e) => {
         setFilters({ currentSubjectFilter: e.target.value });
+        updateSelectedFiltersSummary();
       });
     }
 
@@ -281,6 +347,7 @@ function setupEventListeners() {
         });
         e.currentTarget.classList.add("active");
         setFilters({ currentGovFilter: e.currentTarget.dataset.gov });
+        updateSelectedFiltersSummary();
       });
     });
 
@@ -321,6 +388,7 @@ function setupEventListeners() {
     });
 
     setupEventListeners.__initialized = true;
+    updateSelectedFiltersSummary();
     console.log("✅ 메모리 안전 이벤트 리스너 설정 완료");
   } catch (error) {
     console.error("❌ 이벤트 리스너 설정 실패:", error);
@@ -370,6 +438,7 @@ function resetFilters() {
     pager._btnCache = {};
     pager.classList.add("pagination");
   });
+  updateSelectedFiltersSummary();
   showToast("모든 필터가 초기화되었습니다");
 }
 

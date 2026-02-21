@@ -15,13 +15,13 @@
   }
 
   // 1) localStorage에서 설정 읽기
-  let theme = 'system';
+  let theme = 'dark';
   let font  = 'normal';
   let anim  = 'on';
   let radius = 'round';
 
   try {
-    theme  = normalize(localStorage.getItem('siteTheme'),    ['light','dark','system'], 'system');
+    theme  = normalize(localStorage.getItem('siteTheme'),    ['light','dark','system'], 'dark');
     font   = normalize(localStorage.getItem('siteFontSize'), ['small','normal','large'], 'normal');
     anim   = normalize(localStorage.getItem('siteAnim'),     ['on','off'], 'on');
     radius = normalize(localStorage.getItem('siteRadius'),   ['square','round'], 'round');
@@ -81,7 +81,7 @@
 })();
 </script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>🌟 딱필모 indev </title>
 <link rel="stylesheet" href="styles/styles.css">
 <link rel="stylesheet" href="about/about.css">
@@ -240,6 +240,8 @@
       
       <button class="reset-btn" id="resetBtn">🔄 필터 초기화</button>
     </div>
+
+    <div class="active-filter-summary" id="activeFilterSummary" aria-live="polite"></div>
     
     <div class="stats" id="statsBar">
     <!-- 페이지당 보기 -->

@@ -399,14 +399,12 @@ function setupHashRouting() {
   if (backBtn) {
     backBtn.onclick = (e) => {
       e.preventDefault();
-
-      // 해시가 있는 상세 상태에서 왔다면 진짜 뒤로가기
-      if (location.hash && location.hash.includes("#site=")) {
-        history.back();
+      // 항상 메인 목록으로 이동 (이전 상세 히스토리로 되돌아가지 않음)
+      const listHash = "#/";
+      if (location.hash !== listHash) {
+        location.hash = listHash;
         return;
       }
-
-      // 혹시나 해시가 이미 없는 상태면 그냥 목록 보여주기
       showList();
     };
   }

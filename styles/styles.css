@@ -98,6 +98,11 @@ body.dark {
 }
 html {
   height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -105,9 +110,13 @@ html {
 body {
   height: 100%;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--text-primary);
   overflow-x: hidden;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   display: flex;
   flex-direction: column;
   transition: color var(--transition-slow);
@@ -143,6 +152,7 @@ body::before {
 .container {
   max-width: none;
   width: 100%;
+  max-width: 100vw;
   margin: 0;
   padding: 0 var(--space-8) var(--space-10);
   background: transparent;
@@ -304,6 +314,7 @@ body.dark .top-menu summary {
   top: calc(100% + 8px);
   right: 0;
   min-width: 180px;
+  max-width: min(240px, calc(100vw - 24px));
   padding: var(--space-2);
   background: var(--bg-primary);
   border: 1px solid var(--border-subtle);
@@ -313,10 +324,11 @@ body.dark .top-menu summary {
   flex-direction: column;
   gap: var(--space-2);
   z-index: 60;
+  backdrop-filter: blur(10px);
 }
 
 body.dark .top-menu-panel {
-  background: var(--bg-secondary);
+  background: rgba(24, 24, 40, 0.98);
   border-color: var(--border-normal);
 }
 
@@ -338,8 +350,43 @@ body.dark .top-menu-link:hover {
 }
 
 @media (max-width: 900px) {
+  .container {
+    padding: 0 var(--space-3) var(--space-6);
+  }
+
   .top-controls {
+    --tc-bleed-left: 0px;
+    --tc-bleed-right: 0px;
+    --tc-pad-left: var(--space-3);
+    --tc-pad-right: var(--space-3);
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
     gap: var(--space-3);
+  }
+
+  .search-box {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .search-box input,
+  #subjectFilter,
+  #itemsPerPage {
+    font-size: 16px;
+  }
+
+  .content-layout,
+  .main-panel,
+  .categories-container,
+  .category-section {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .category-section {
+    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .top-desc {
@@ -349,6 +396,19 @@ body.dark .top-menu-link:hover {
 
   .top-menu {
     margin-left: 0;
+    z-index: 70;
+  }
+
+  .top-menu-panel {
+    left: 0;
+    right: auto;
+    min-width: 160px;
+    max-width: min(220px, calc(100vw - 24px));
+  }
+
+  .active-filter-summary {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
   }
 }
 
@@ -1258,6 +1318,64 @@ body.dark .filters {
   background: rgba(35,35,55,0.6);
 }
 
+.active-filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(248,249,250,0.45);
+}
+
+body.dark .active-filter-summary {
+  background: rgba(35,35,55,0.45);
+}
+
+.active-filter-summary-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  margin-right: var(--space-1);
+}
+
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.active-filter-chip .chip-label {
+  opacity: 0.9;
+}
+
+.active-filter-chip .chip-value {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.active-filter-chip.is-active {
+  border-color: rgba(102,126,234,0.55);
+  background: var(--gradient-primary-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.active-filter-chip.is-active .chip-value {
+  color: var(--primary-500);
+}
+
+.active-filter-chip.is-all {
+  opacity: 0.78;
+}
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -1527,6 +1645,27 @@ body.dark .stats {
   color: white;
   border-radius: var(--radius-lg);
   margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) var(--space-4);
+}
+
+.category-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.category-info > div {
+  min-width: 0;
+}
+
+.category-title,
+.category-subtitle {
+  overflow-wrap: anywhere;
+}
+
+.category-count {
+  flex: 0 0 auto;
 }
 
 .category-icon {

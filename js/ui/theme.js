@@ -2,7 +2,7 @@
 function initializeTheme() {
   // Keep a single system-theme path to avoid duplicate listeners.
   if (!document.documentElement.dataset.userTheme) {
-    applyTheme("system");
+    applyTheme("dark");
   }
 }
 

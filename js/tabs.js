@@ -25,6 +25,7 @@ function buildCategoryTabs() {
     .forEach((sec) => sec.classList.remove("expanded-category"));
 
     setFilters({ currentCategoryFilter: "all" });
+    window.updateSelectedFiltersSummary?.();
     updateCategoryPagingMode();
     (window.afterNextRender ? window.afterNextRender(endCategorySwitch) : requestAnimationFrame(endCategorySwitch));
   });
@@ -54,6 +55,7 @@ function buildCategoryTabs() {
       if (selected) selected.classList.add("expanded-category");
 
       setFilters({ currentCategoryFilter: key });
+      window.updateSelectedFiltersSummary?.();
       updateCategoryPagingMode();
       (window.afterNextRender ? window.afterNextRender(endCategorySwitch) : requestAnimationFrame(endCategorySwitch));
     });
@@ -67,4 +69,5 @@ function updateActiveTab(selectedTab) {
     btn.classList.remove("active");
   });
   selectedTab.classList.add("active");
+  window.updateSelectedFiltersSummary?.();
 }
