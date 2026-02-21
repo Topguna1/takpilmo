@@ -13,6 +13,86 @@ function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function isChosungOnlyToken(token) {
+  return /^[\u3131-\u314e]+$/.test(String(token || ""));
+}
+
+function getChosungText(value) {
+  const fn =
+    window.ddakpilmo?.utils?.getChosungSafe ||
+    window.getChosungSafe ||
+    window.getChosung;
+  try {
+    return typeof fn === "function" ? String(fn(value ?? "")) : String(value ?? "");
+  } catch {
+    return String(value ?? "");
+  }
+}
+
+function mergeRanges(ranges) {
+  if (!ranges.length) return [];
+  const sorted = ranges
+    .map((r) => [Math.max(0, r[0] | 0), Math.max(0, r[1] | 0)])
+    .filter((r) => r[1] > r[0])
+    .sort((a, b) => a[0] - b[0]);
+
+  const merged = [sorted[0]];
+  for (let i = 1; i < sorted.length; i += 1) {
+    const prev = merged[merged.length - 1];
+    const cur = sorted[i];
+    if (cur[0] <= prev[1]) prev[1] = Math.max(prev[1], cur[1]);
+    else merged.push(cur);
+  }
+  return merged;
+}
+
+function collectHighlightRanges(raw, tokens) {
+  const ranges = [];
+  const lowerRaw = raw.toLowerCase();
+  const chosungRaw = getChosungText(raw).toLowerCase();
+
+  for (const token of tokens) {
+    const needle = String(token || "").toLowerCase();
+    if (!needle) continue;
+
+    if (isChosungOnlyToken(needle)) {
+      let from = 0;
+      while (from <= chosungRaw.length - needle.length) {
+        const idx = chosungRaw.indexOf(needle, from);
+        if (idx === -1) break;
+        ranges.push([idx, idx + needle.length]);
+        from = idx + Math.max(1, needle.length);
+      }
+      continue;
+    }
+
+    let from = 0;
+    while (from <= lowerRaw.length - needle.length) {
+      const idx = lowerRaw.indexOf(needle, from);
+      if (idx === -1) break;
+      ranges.push([idx, idx + needle.length]);
+      from = idx + Math.max(1, needle.length);
+    }
+  }
+
+  return mergeRanges(ranges);
+}
+
+function renderHighlightedHtml(raw, ranges) {
+  if (!ranges.length) return escapeHtmlSafe(raw);
+  let out = "";
+  let last = 0;
+
+  for (const [start, end] of ranges) {
+    if (start > last) out += escapeHtmlSafe(raw.slice(last, start));
+    out += `<span class="search-highlight">${escapeHtmlSafe(raw.slice(start, end))}</span>`;
+    last = end;
+  }
+
+  if (last < raw.length) out += escapeHtmlSafe(raw.slice(last));
+  return out;
+}
+
 function highlightSearchTerms(text, query) {
   const raw = String(text ?? "");
   const q = String(query ?? "").trim();
@@ -29,26 +109,8 @@ function highlightSearchTerms(text, query) {
 
   if (!tokens.length) return escapeHtmlSafe(raw);
 
-  const pattern = tokens.map(escapeRegExp).join("|");
-  const regex = new RegExp(`(${pattern})`, "gi");
-
-  let out = "";
-  let last = 0;
-  let match;
-
-  while ((match = regex.exec(raw)) !== null) {
-    const start = match.index;
-    const end = start + match[0].length;
-
-    if (start > last) out += escapeHtmlSafe(raw.slice(last, start));
-    out += `<span class="search-highlight">${escapeHtmlSafe(raw.slice(start, end))}</span>`;
-    last = end;
-
-    if (regex.lastIndex === start) regex.lastIndex += 1;
-  }
-
-  if (last < raw.length) out += escapeHtmlSafe(raw.slice(last));
-  return out;
+  const ranges = collectHighlightRanges(raw, tokens);
+  return renderHighlightedHtml(raw, ranges);
 }
 
 function makeSearchSnippet(text, query, radius = 36) {
@@ -59,11 +121,15 @@ function makeSearchSnippet(text, query, radius = 36) {
 
   const tokens = q.split(/\s+/).filter(Boolean);
   const lower = raw.toLowerCase();
+  const chosung = getChosungText(raw).toLowerCase();
 
   let hit = -1;
   let tokenLen = 0;
   for (const token of tokens) {
-    const idx = lower.indexOf(token.toLowerCase());
+    const needle = token.toLowerCase();
+    const idx = isChosungOnlyToken(needle)
+      ? chosung.indexOf(needle)
+      : lower.indexOf(needle);
     if (idx !== -1) {
       hit = idx;
       tokenLen = token.length;
@@ -86,24 +152,16 @@ function makeSearchSnippet(text, query, radius = 36) {
 
 window.highlightSearchTerms = highlightSearchTerms;
 window.makeSearchSnippet = makeSearchSnippet;
+window.ddakpilmo = window.ddakpilmo || {};
+window.ddakpilmo.search = window.ddakpilmo.search || {};
+window.ddakpilmo.search.highlightSearchTerms =
+  window.ddakpilmo.search.highlightSearchTerms || window.highlightSearchTerms;
+window.ddakpilmo.search.makeSearchSnippet =
+  window.ddakpilmo.search.makeSearchSnippet || window.makeSearchSnippet;
 
 (function () {
   const HL_TAG = "span";
   const HL_CLASS = "search-highlight";
-
-  function buildPattern(query) {
-    const q = String(query ?? "").trim();
-    if (!q) return null;
-
-    const tokens = q
-      .split(/\s+/)
-      .map((t) => t.trim())
-      .filter(Boolean)
-      .map(escapeRegExp);
-
-    if (!tokens.length) return null;
-    return new RegExp(`(${tokens.join("|")})`, "gi");
-  }
 
   function clearHighlights(root) {
     const marks = root.querySelectorAll(`${HL_TAG}.${HL_CLASS}`);
@@ -115,39 +173,9 @@ window.makeSearchSnippet = makeSearchSnippet;
     });
   }
 
-  function highlightInTextNode(node, regex) {
-    const text = node.nodeValue;
-    regex.lastIndex = 0;
-    const first = regex.exec(text);
-    if (!first) return;
-
-    const frag = document.createDocumentFragment();
-    let last = 0;
-    regex.lastIndex = 0;
-
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      const start = match.index;
-      const end = start + match[0].length;
-
-      if (start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
-
-      const mark = document.createElement(HL_TAG);
-      mark.className = HL_CLASS;
-      mark.textContent = text.slice(start, end);
-      frag.appendChild(mark);
-
-      last = end;
-      if (regex.lastIndex === start) regex.lastIndex += 1;
-    }
-
-    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
-    node.parentNode.replaceChild(frag, node);
-  }
-
   function highlightInNode(root, query) {
-    const regex = buildPattern(query);
-    if (!regex) {
+    const q = String(query ?? "").trim();
+    if (!q) {
       clearHighlights(root);
       return;
     }
@@ -163,6 +191,13 @@ window.makeSearchSnippet = makeSearchSnippet;
           if (parent.classList && parent.classList.contains("share-btn")) {
             return NodeFilter.FILTER_REJECT;
           }
+          if (
+            parent.nodeName === "SCRIPT" ||
+            parent.nodeName === "STYLE" ||
+            parent.nodeName === "NOSCRIPT"
+          ) {
+            return NodeFilter.FILTER_REJECT;
+          }
           parent = parent.parentNode;
         }
 
@@ -172,7 +207,19 @@ window.makeSearchSnippet = makeSearchSnippet;
 
     const targets = [];
     while (walker.nextNode()) targets.push(walker.currentNode);
-    targets.forEach((node) => highlightInTextNode(node, regex));
+    targets.forEach((node) => {
+      const text = String(node.nodeValue || "");
+      if (!text.trim()) return;
+
+      const html = highlightSearchTerms(text, q);
+      if (!html.includes(`class="${HL_CLASS}"`)) return;
+
+      const wrap = document.createElement("span");
+      wrap.innerHTML = html;
+      const frag = document.createDocumentFragment();
+      while (wrap.firstChild) frag.appendChild(wrap.firstChild);
+      node.parentNode?.replaceChild(frag, node);
+    });
   }
 
   window.ddakHighlight = {

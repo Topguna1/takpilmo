@@ -1,72 +1,75 @@
-// ==================== 유틸리티 함수들 ====================
+// Utility SSOT
+(function () {
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+  function debounce(func, wait) {
+    let timeoutId;
+    const timerManager = window.memoryManager?.timerManager;
 
-function debounce(func, wait) {
-  let timeoutId;
-  const timerManager = window.memoryManager?.timerManager;
+    return function debounced(...args) {
+      const later = () => {
+        if (timerManager && timeoutId) timerManager.clearTimeout(timeoutId);
+        func(...args);
+      };
 
-  return function executedFunction(...args) {
-    const later = () => {
-      // 🧹 메모리 관리자를 통한 타이머 정리
-      if (timerManager && timeoutId) {
-        timerManager.clearTimeout(timeoutId);
-      }
-      func(...args);
+      if (timerManager && timeoutId) timerManager.clearTimeout(timeoutId);
+      else if (timeoutId) clearTimeout(timeoutId);
+
+      timeoutId = timerManager
+        ? timerManager.setTimeout(later, wait)
+        : setTimeout(later, wait);
     };
+  }
 
-    // 🧹 기존 타이머 정리
-    if (timerManager && timeoutId) {
-      timerManager.clearTimeout(timeoutId);
-    } else if (timeoutId) {
-      clearTimeout(timeoutId);
+  function getChosung(str) {
+    const CHO = [
+      "\u3131", "\u3132", "\u3134", "\u3137", "\u3138", "\u3139", "\u3141",
+      "\u3142", "\u3143", "\u3145", "\u3146", "\u3147", "\u3148", "\u3149",
+      "\u314a", "\u314b", "\u314c", "\u314d", "\u314e"
+    ];
+    const src = String(str ?? "");
+    let out = "";
+
+    for (let i = 0; i < src.length; i += 1) {
+      const code = src.charCodeAt(i) - 44032;
+      if (code >= 0 && code <= 11171) out += CHO[Math.floor(code / 588)] || "";
+      else out += src[i];
     }
+    return out;
+  }
 
-    // 🧹 메모리 관리자를 통한 새 타이머 설정
-    if (timerManager) {
-      timeoutId = timerManager.setTimeout(later, wait);
-    } else {
-      timeoutId = setTimeout(later, wait);
-    }
-  };
-}
-
-function getChosung(str) {
-  const CHOSUNG_LIST = [
-    "ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ",
-    "ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"
-  ];
-  let result = "";
-  str = String(str ?? "");
-  for (let i = 0; i < str.length; i++) {
-    const code = str.charCodeAt(i) - 44032;
-    if (code >= 0 && code <= 11171) {
-      result += CHOSUNG_LIST[Math.floor(code / 588)];
-    } else {
-      result += str[i];
+  function getChosungSafe(str) {
+    try {
+      return getChosung(str);
+    } catch (error) {
+      console.warn("getChosungSafe error:", error);
+      return String(str ?? "");
     }
   }
-  return result;
-}
 
-// ✅ 전역 노출(기존 코드 호환)
-window.escapeHtml = escapeHtml;
-window.debounce = debounce;
-window.getChosung = getChosung;
+  window.escapeHtml = window.escapeHtml || escapeHtml;
+  window.debounce = window.debounce || debounce;
+  window.getChosung = window.getChosung || getChosung;
+  window.getChosungSafe = window.getChosungSafe || getChosungSafe;
 
+  window.ddakpilmo = window.ddakpilmo || {};
+  window.ddakpilmo.utils = window.ddakpilmo.utils || {};
 
-// ✅ 네임스페이스 유틸 단일 소스(SSOT)
-window.ddakpilmo = window.ddakpilmo || {};
-window.ddakpilmo.utils = window.ddakpilmo.utils || {};
-window.ddakpilmo.utils.escapeHtml = escapeHtml;
-window.ddakpilmo.utils.debounce = debounce;
-window.ddakpilmo.utils.getChosung = getChosung;
-window.ddakpilmo.escapeHtml = escapeHtml;
-window.ddakpilmo.getChosung = getChosung;
+  window.ddakpilmo.utils.escapeHtml = window.ddakpilmo.utils.escapeHtml || window.escapeHtml;
+  window.ddakpilmo.utils.debounce = window.ddakpilmo.utils.debounce || window.debounce;
+  window.ddakpilmo.utils.getChosung = window.ddakpilmo.utils.getChosung || window.getChosung;
+  window.ddakpilmo.utils.getChosungSafe =
+    window.ddakpilmo.utils.getChosungSafe || window.getChosungSafe;
+
+  window.ddakpilmo.escapeHtml = window.ddakpilmo.escapeHtml || window.escapeHtml;
+  window.ddakpilmo.getChosung = window.ddakpilmo.getChosung || window.getChosung;
+  window.ddakpilmo.getChosungSafe =
+    window.ddakpilmo.getChosungSafe || window.getChosungSafe;
+})();

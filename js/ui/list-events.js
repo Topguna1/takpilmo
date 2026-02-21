@@ -25,6 +25,14 @@ function setupEventListeners() {
   try {
     const searchInput = document.getElementById("searchInput");
     const autocompleteList = document.getElementById("autocomplete-list");
+    const highlight =
+      window.ddakpilmo?.search?.highlightSearchTerms ||
+      window.highlightSearchTerms ||
+      null;
+    const escape =
+      window.ddakpilmo?.utils?.escapeHtml ||
+      window.escapeHtml ||
+      ((value) => String(value ?? ""));
     // ==================== 카드 클릭/상세 버튼 이벤트 위임 ====================
     const cardsContainer = document.getElementById("categoriesContainer");
     if (cardsContainer && !cardsContainer.__delegationBound) {
@@ -139,14 +147,14 @@ function setupEventListeners() {
           item.className = "autocomplete-item";
 
           const siteName =
-            typeof highlightSearchTerms === "function"
-              ? highlightSearchTerms(site.name, query)
-              : escapeHtml(site.name);
+            typeof highlight === "function"
+              ? highlight(site.name, query)
+              : escape(site.name);
 
           const siteDesc =
-            typeof highlightSearchTerms === "function"
-              ? highlightSearchTerms(site.desc || "", query)
-              : escapeHtml(site.desc || "");
+            typeof highlight === "function"
+              ? highlight(site.desc || "", query)
+              : escape(site.desc || "");
 
           item.innerHTML = `
             <strong>${siteName}</strong><br>

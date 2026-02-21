@@ -13,6 +13,9 @@
     constructor() {
       this.errorLog = [];
       this.maxErrors = 50;
+      this.bootAt = Date.now();
+      this.maxRetryWindowMs = 15000;
+      this.resourceRetryOnce = new Set();
       this.setupGlobalErrorHandlers();
     }
 
@@ -166,30 +169,34 @@
     }
 
     retryResourceLoad(errorInfo) {
-      const src = errorInfo?.src;
+      const src = String(errorInfo?.src || "").trim();
       if (!src) return;
 
-      // ✅ 특정 핵심 리소스만 재시도
       const isCritical =
-        src.includes('fuse.js') ||
-        src.includes('categories-data.js') ||
-        src.includes('sites-data.js');
-
+        src.includes("fuse.js") ||
+        src.includes("categories-data.js") ||
+        src.includes("sites-data.js");
       if (!isCritical) return;
 
-      // ✅ 앱이 한참 지난 뒤에 "재주입"은 오히려 상태 꼬임 가능 → 시간창 제한
-      if (Date.now() - this.bootAt > this.maxRetryWindowMs) return;
+      const bootAt = Number.isFinite(this.bootAt) ? this.bootAt : Date.now();
+      const retryWindow = Number.isFinite(this.maxRetryWindowMs)
+        ? this.maxRetryWindowMs
+        : 15000;
+      if (Date.now() - bootAt > retryWindow) return;
 
-      // ✅ src별 1회만
+      if (!(this.resourceRetryOnce instanceof Set)) {
+        this.resourceRetryOnce = new Set();
+      }
       if (this.resourceRetryOnce.has(src)) return;
       this.resourceRetryOnce.add(src);
 
-      // ✅ 이미 동일 src 스크립트가 DOM에 있으면 재주입 금지
-      const already = Array.from(document.scripts).some(s => s?.src && s.src.includes(src));
+      const already = Array.from(document.scripts || []).some(
+        (script) => script?.src && script.src.includes(src)
+      );
       if (already) return;
 
       setTimeout(() => {
-        console.log(`🔄 Retrying to load (once): ${src}`);
+        console.log("retrying critical resource:", src);
         this.reloadScript(src);
       }, 2000);
     }
@@ -336,36 +343,15 @@
   // ==================== 3. 안전한 유틸리티 함수들 ====================
   
   // HTML 이스케이프 함수
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+  const escapeHtml =
+    window.ddakpilmo?.utils?.escapeHtml ||
+    window.escapeHtml ||
+    ((value) => String(value ?? ""));
 
-  // 향상된 초성 추출 함수
-  function getChosungSafe(str) {
-    if (!str || typeof str !== "string") return "";
-    const CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-    let result = "";
-    try {
-      for (let i = 0; i < str.length; i++) {
-        const code = str.charCodeAt(i) - 44032;
-        if (code >= 0 && code <= 11171) {
-          result += CHO[Math.floor(code / 588)] || "";
-        } else {
-          result += str[i];
-        }
-      }
-    } catch (error) {
-      console.warn("getChosungSafe 오류:", error);
-      return String(str);
-    }
-    return result;
-  }
+  const getChosungSafe =
+    window.ddakpilmo?.utils?.getChosungSafe ||
+    window.getChosungSafe ||
+    ((value) => String(value ?? ""));
 
 // ==================== 4. 강화된 사이트 카드 생성 함수 ====================
 

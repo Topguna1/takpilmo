@@ -125,9 +125,31 @@ function setupHashRouting() {
     
     // 제목 & 설명 (검색어 하이라이트 적용)
     // highlightSearchTerms 함수가 없으면 그냥 텍스트 넣도록 폴백 처리
-    const safeHighlight = (text) => typeof highlightSearchTerms === 'function' 
-      ? highlightSearchTerms(text, state.currentSearchQuery) 
-      : (text || '');
+    const refs = {
+      highlight:
+        window.ddakpilmo?.search?.highlightSearchTerms ||
+        window.highlightSearchTerms,
+      escapeHtml:
+        window.ddakpilmo?.utils?.escapeHtml ||
+        window.escapeHtml ||
+        ((value) => String(value ?? "")),
+      ageNames:
+        window.ageNames ||
+        window.ddakpilmo?.config?.ageNames ||
+        {},
+      subjectNames:
+        window.subjectNames ||
+        window.ddakpilmo?.config?.subjectNames ||
+        {},
+      getCategoryName:
+        window.getCategoryName ||
+        window.ddakpilmo?.config?.getCategoryName ||
+        ((key) => String(key || "")),
+    };
+
+    const safeHighlight = (text) => (typeof refs.highlight === "function"
+      ? refs.highlight(text, state.currentSearchQuery)
+      : refs.escapeHtml(text || ""));
 
     // ✅ 제목 (하이라이트 유지) + 정부 로고 붙이기 위한 래핑
     titleEl.innerHTML = `<span class="detail-title-text">${safeHighlight(site.name || "이름 없음")}</span>`;
@@ -173,15 +195,15 @@ function setupHashRouting() {
 
     // 과목 (subjects가 배열인지 확인)
     if (Array.isArray(site.subjects)) {
-        chips.push(`📚 ${site.subjects.map(s => subjectNames[s] || s).join(', ')}`);
+        chips.push(`📚 ${site.subjects.map(s => refs.subjectNames[s] || s).join(', ')}`);
     }
     // 연령
     if (Array.isArray(site.ages)) {
-        chips.push(`👶 ${site.ages.map(a => ageNames[a] || a).join(', ')}`);
+        chips.push(`👶 ${site.ages.map(a => refs.ageNames[a] || a).join(', ')}`);
     }
     // 카테고리
     if (site.category) {
-        chips.push(`📂 ${getCategoryName(site.category)}`);
+        chips.push(`📂 ${refs.getCategoryName(site.category)}`);
     }
 
     chips.forEach(text => {

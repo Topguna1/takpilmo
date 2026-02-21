@@ -27,16 +27,24 @@
       // 1. main.js에서 공유해준 함수로 '현재 보여줄 사이트 목록' 가져오기
       // (만약 함수가 없으면 빈 배열 처리해서 에러 방지)
       const getFiltered = window.getFilteredSites || window.getFilteredSitesWithCache;
-      const filtered = (typeof getFiltered === 'function') ? getFiltered() : [];
+      const filtered = (typeof getFiltered === "function") ? getFiltered() : [];
 
-      // 2. 카테고리 정보 가져오기
       const getAllCats = window.getAllCategories;
-      const allCats = (typeof getAllCats === 'function') ? getAllCats() : {};
-      
-      // 카테고리 키 목록 추출
-      const categories = Object.keys(allCats).length > 0 
-        ? Object.keys(allCats) 
-        : Array.from(new Set(filtered.map(s => s.category)));
+      const allCats = (typeof getAllCats === "function") ? getAllCats() : {};
+      const categories = Object.keys(allCats).length > 0
+        ? Object.keys(allCats)
+        : Array.from(new Set(filtered.map((s) => s?.category).filter(Boolean)));
+
+      const categoryMap = new Map();
+      for (const category of categories) {
+        categoryMap.set(category, []);
+      }
+      for (const site of filtered) {
+        const key = site?.category;
+        if (!key) continue;
+        if (!categoryMap.has(key)) categoryMap.set(key, []);
+        categoryMap.get(key).push(site);
+      }
 
       const hasResults = filtered.length > 0;
 
@@ -75,7 +83,7 @@
         
         if (!section || !content) continue;
 
-        const list = filtered.filter(s => s.category === category);
+        const list = categoryMap.get(category) || [];
         const totalCount = list.length;
 
         // 숫자 뱃지 업데이트

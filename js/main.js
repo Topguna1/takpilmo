@@ -69,6 +69,7 @@ window.siteDetailMap = window.siteDetailMap || {};
 
 const GOV_ICON_DATA_URL =
   "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Emblem_of_the_Government_of_the_Republic_of_Korea.svg/250px-Emblem_of_the_Government_of_the_Republic_of_Korea.svg.png";
+window.GOV_ICON_DATA_URL = window.GOV_ICON_DATA_URL || GOV_ICON_DATA_URL;
 // ===== DOM 캐싱 =====
 const DOM = {
   categoriesContainer: document.getElementById("categoriesContainer"),
@@ -83,18 +84,36 @@ const DOM = {
 
 // ==================== 핵심 변수 및 상태 관리 ====================
 const ageNames = {
-  elem: "초등학생", 
-  mid: "중학생", 
-  high: "고등학생", 
-  adult: "성인"
+  elem: "\uCD08\uB4F1\uD559\uC0DD",
+  mid: "\uC911\uD559\uC0DD",
+  high: "\uACE0\uB4F1\uD559\uC0DD",
+  adult: "\uC131\uC778"
 };
 
 const subjectNames = {
-  korean: "국어", math: "수학", english: "영어", science: "과학", 
-  social: "사회", history: "역사", art: "예술", music: "음악", 
-  pe: "체육", tech: "기술", coding: "코딩", language: "외국어", 
-  general: "종합", exam: "시험대비", career: "진로"
+  korean: "\uAD6D\uC5B4",
+  math: "\uC218\uD559",
+  english: "\uC601\uC5B4",
+  science: "\uACFC\uD559",
+  social: "\uC0AC\uD68C",
+  history: "\uC5ED\uC0AC",
+  art: "\uBBF8\uC220",
+  music: "\uC74C\uC545",
+  pe: "\uCCB4\uC721",
+  tech: "\uAE30\uC220",
+  coding: "\uCF54\uB529",
+  language: "\uC5B8\uC5B4",
+  general: "\uC885\uD569",
+  exam: "\uC2DC\uD5D8\uB300\uBE44",
+  career: "\uC9C4\uB85C"
 };
+
+window.ageNames = window.ageNames || ageNames;
+window.subjectNames = window.subjectNames || subjectNames;
+window.ddakpilmo = window.ddakpilmo || {};
+window.ddakpilmo.config = window.ddakpilmo.config || {};
+window.ddakpilmo.config.ageNames = window.ddakpilmo.config.ageNames || window.ageNames;
+window.ddakpilmo.config.subjectNames = window.ddakpilmo.config.subjectNames || window.subjectNames;
 
 // init re-entry guard (state/actions moved to js/app/store.js)
 let __legacyInitStarted = false;
@@ -129,6 +148,7 @@ function handleInitializationFailure(error) {
   }
 }
 window.handleDataLoadFailure = handleDataLoadFailure;
+window.handleInitializationFailure = handleInitializationFailure;
 
 
 // ==================== 검색 하이라이트 기능 ====================
@@ -149,6 +169,11 @@ function getCategoryIcon(key) {
   const c = getAllCategories()[key]; 
   return c ? c.icon : "📁"; 
 }
+window.getCategoryName = window.getCategoryName || getCategoryName;
+window.ddakpilmo = window.ddakpilmo || {};
+window.ddakpilmo.config = window.ddakpilmo.config || {};
+window.ddakpilmo.config.getCategoryName =
+  window.ddakpilmo.config.getCategoryName || window.getCategoryName;
 // ==================== UI 업데이트 함수들 ====================
 function updateStats(totalFiltered) {
   const total = state.sites.length;
@@ -266,79 +291,49 @@ function updateCategoryPagingMode() {
 
 
 // ==================== 초기화 함수 ====================
+function prepareInitialSites() {
+  if (typeof initialSites === "undefined" || !Array.isArray(initialSites)) {
+    console.error("initialSites is missing or invalid");
+    return false;
+  }
+
+  const normalized = window.normalizeSitesForState?.(initialSites, {
+    ageNames: window.ageNames || ageNames,
+    subjectNames: window.subjectNames || subjectNames,
+    getCategoryName: window.getCategoryName || getCategoryName,
+    normalizeTextForSearch,
+    toJamoString,
+    safeGetChosung,
+  });
+
+  state.sites = (Array.isArray(normalized) ? normalized : initialSites).slice();
+  return true;
+}
+
 function init() {
   if (__legacyInitStarted) {
     console.log("[init] already started; skip duplicate call");
-    return;
+    return true;
   }
   __legacyInitStarted = true;
-  console.log("🌟 딱필모 안전 초기화 시작...");
-  window.buildCategoryTabs?.();
-  
+
   try {
-    // 오류 처리 시스템 확인
-    if (!window.ddakpilmo || !window.ddakpilmo.errorManager) {
-      console.warn("⚠️ 오류 처리 시스템이 로드되지 않았습니다");
-    }
-
-    // 외부 데이터 확인 및 안전한 초기화
-    if (typeof initialSites !== 'undefined' && Array.isArray(initialSites)) {
-      state.sites = (window.normalizeSitesForState?.(initialSites, {
-        ageNames,
-        subjectNames,
-        getCategoryName,
-        normalizeTextForSearch,
-        toJamoString,
-        safeGetChosung
-      }) || initialSites).slice();
-      console.log(`✅ ${state.sites.length}개 사이트 안전 로드 완료`);
-    } else {
-      console.error("❌ initialSites 데이터를 찾을 수 없습니다");
+    if (!prepareInitialSites()) {
       handleDataLoadFailure();
-      return;
+      return false;
     }
-    const initSteps = [
-      { name: '테마 초기화', func: () => window.initializeTheme?.() },
-      { name: '카테고리 섹션', func: () => window.renderCategorySections?.() },
-      { name: '카테고리 탭', func: () => window.buildCategoryTabs?.() },
-      { name: '이벤트 리스너', func: () => window.setupEventListeners?.() },
-      { name: '설정 패널', func: () => window.setupSettingsPanel?.() },
-      { name: '스크롤 버튼', func: () => window.setupScrollFabs?.() },
-      { name: 'ID 보장', func: () => window.ensureSiteIds?.() },
-      { name: '사이트 렌더링', func: () => window.renderSites?.() },
-      { name: '해시 라우팅', func: () => window.setupHashRouting?.() },
-      { name: '검색 엔진', func: () => window.initFuse?.() }
-    ];
-
-    let successCount = 0;
-    initSteps.forEach(step => {
-      try {
-        step.func();
-        console.log(`✅ ${step.name} 완료`);
-        successCount++;
-      } catch (error) {
-        console.error(`❌ ${step.name} 실패:`, error);
-        if (typeof showToast === 'function') {
-          showToast(`⚠️ ${step.name}에 문제가 발생했습니다`, 'warning');
-        }
-      }
-    });
-
-    console.log(`🎯 초기화 완료: ${successCount}/${initSteps.length} 성공`);
-    
-    if (successCount >= 4 && state.sites.length > 0) {
-      setTimeout(() => {
-        showToast("🌟 딱필모에 오신 것을 환영합니다!", 'success');
-      }, 1000);
-    }
-    
+    return true;
   } catch (error) {
-    console.error("❌ 초기화 중 심각한 오류:", error);
+    console.error("init failed:", error);
     handleInitializationFailure(error);
+    return false;
   }
-  updateStats();
 }
 
-
-
-
+window.init = init;
+window.updateStats = updateStats;
+window.showSearchStats = showSearchStats;
+window.getAllCategories = getAllCategories;
+window.getCategoryName = window.getCategoryName || getCategoryName;
+window.getCategoryIcon = getCategoryIcon;
+window.updateCategoryPagingMode = updateCategoryPagingMode;

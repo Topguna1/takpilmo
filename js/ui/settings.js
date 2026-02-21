@@ -1,5 +1,9 @@
 // ==================== 설정 패널 초기화 (단일 버전) ====================
 function setupSettingsPanel() {
+  if (setupSettingsPanel.__initialized) {
+    return;
+  }
+
   const manager = window.memoryManager?.eventManager;
 
   const fab = document.getElementById("settingsFab");
@@ -140,6 +144,7 @@ function setupSettingsPanel() {
   loadSettings();
   applyAll();
   syncUI();
+  setupSettingsPanel.__initialized = true;
 }
 
 // ✅ 전역 노출

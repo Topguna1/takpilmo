@@ -175,17 +175,19 @@
 
     toast.style.cssText = `
       pointer-events: auto;
-      min-width: 240px;
-      max-width: 360px;
+      width: fit-content;
+      min-width: 0;
+      max-width: min(360px, calc(100vw - 24px));
       padding: 12px 14px;
       border-radius: 12px;
       background: rgba(30,30,30,0.92);
       color: #fff;
       border: 1px solid ${s.border};
       box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-      display: flex;
+      display: inline-flex;
       gap: 10px;
       align-items: flex-start;
+      align-self: flex-end;
 
       overflow: hidden; /* ✅ 접힐 때 내용 튀는 거 방지 */
       opacity: 0;
@@ -204,7 +206,7 @@
 
     const text = doc.createElement("div");
     text.textContent = msg;
-    text.style.cssText = "font-size:14px; line-height:1.35; word-break:break-word;";
+    text.style.cssText = "font-size:14px; line-height:1.35; word-break:break-word; max-width: min(52vw, 280px);";
 
     const count = doc.createElement("span");
     count.className = "toast-count";
@@ -222,7 +224,7 @@
     `;
 
     const row = doc.createElement("div");
-    row.style.cssText = "display:flex; align-items:flex-start; gap:8px;";
+    row.style.cssText = "display:inline-flex; align-items:flex-start; gap:8px; min-width:0;";
     row.append(text, count);
 
     toast.append(icon, row);

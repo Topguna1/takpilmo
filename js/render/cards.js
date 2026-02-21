@@ -1,6 +1,29 @@
 // Card rendering helpers extracted from main.js
 (function () {
+  function getConfigRefs() {
+    const cfg = window.ddakpilmo?.config || {};
+    return {
+      ageNames:
+        window.ageNames ||
+        cfg.ageNames ||
+        {},
+      getCategoryName:
+        window.getCategoryName ||
+        cfg.getCategoryName ||
+        ((key) => String(key || "")),
+      highlightSearchTerms:
+        window.ddakpilmo?.search?.highlightSearchTerms ||
+        window.highlightSearchTerms ||
+        null,
+      escapeHtml:
+        window.ddakpilmo?.utils?.escapeHtml ||
+        window.escapeHtml ||
+        ((value) => String(value ?? "")),
+    };
+  }
+
   function createSiteCard(site) {
+    const refs = getConfigRefs();
     const card = document.createElement("div");
     card.className = "link-card";
 
@@ -42,10 +65,12 @@
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     a.className = "site-title";
-    const safeHighlight = (text) =>
-      typeof highlightSearchTerms === "function"
-        ? highlightSearchTerms(text, window.state?.currentSearchQuery)
-        : (text || "");
+    const safeHighlight = (text) => {
+      if (typeof refs.highlightSearchTerms === "function") {
+        return refs.highlightSearchTerms(text, window.state?.currentSearchQuery);
+      }
+      return refs.escapeHtml(text || "");
+    };
     a.innerHTML = safeHighlight(site.name || "이름 없음");
 
     if (site.isGov === true) {
@@ -83,13 +108,13 @@
 
     const catTag = document.createElement("span");
     catTag.className = "tag category-tag";
-    catTag.textContent = typeof getCategoryName === "function" ? getCategoryName(site.category) : (site.category || "");
+    catTag.textContent = refs.getCategoryName(site.category);
     tags.appendChild(catTag);
 
     (site.ages || []).forEach((age) => {
       const t = document.createElement("span");
       t.className = "tag age-tag";
-      t.textContent = (typeof ageNames !== "undefined" ? ageNames[age] : age);
+      t.textContent = refs.ageNames[age] || age;
       tags.appendChild(t);
     });
 
