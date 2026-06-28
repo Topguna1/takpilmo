@@ -3,10 +3,13 @@
 <head>
 <script>
 (function () {
-  // ✅ 렌더링 전에 사용자 설정을 HTML에 선적용해서 FOUC/레이아웃 쉬프트 방지
+  window.ddakpilmo = window.ddakpilmo || {};
+  window.ddakpilmo.config = window.ddakpilmo.config || {};
+  window.ddakpilmo.config.contentApiUrl =
+    window.ddakpilmo.config.contentApiUrl ||
+    "https://script.google.com/macros/s/AKfycbxu0QNxzD11mmExZ89ItV9TIvKz9Dd1EYxAiQbL56SyGQU2yzZNyT0qzB6dpwwbslzJeA/exec";
   const html = document.documentElement;
 
-  // 0) 새로고침 직후 1프레임 동안 애니메이션 OFF (진입 깜빡임 방지)
   html.classList.add('no-anim');
   requestAnimationFrame(() => html.classList.remove('no-anim'));
 
@@ -14,7 +17,6 @@
     return allowed.includes(val) ? val : fallback;
   }
 
-  // 1) localStorage에서 설정 읽기
   let theme = 'dark';
   let font  = 'normal';
   let anim  = 'on';
@@ -29,7 +31,6 @@
     console.warn('설정 로드 실패:', e);
   }
 
-  // 2) 테마: html 속성은 렌더 전 적용 가능 (body는 뒤에서 동기화)
   try {
     if (theme === 'light' || theme === 'dark') {
       html.setAttribute('data-theme', theme);
@@ -40,18 +41,15 @@
     }
   } catch {}
 
-  // 3) 폰트/애니/모서리: html에 먼저 클래스 부여 (CSS가 body 기반이어도 body에 즉시 동기화)
   html.classList.remove('font-small','font-normal','font-large','anim-off','radius-square','radius-round');
   html.classList.add(`font-${font}`);
   if (anim === 'off') html.classList.add('anim-off');
   html.classList.add(`radius-${radius}`);
 
-  // 4) body가 생기는 즉시 같은 클래스를 복사해서 기존 CSS(body 기반)도 바로 먹게 함
   function syncBodyOnce() {
     const body = document.body;
     if (!body) return false;
 
-    // dark 모드는 기존 구현을 존중 (body.dark)
     const useDark = (theme === 'dark') ||
       (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -83,39 +81,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>🌟 딱필모 indev </title>
-<link rel="stylesheet" href="styles/styles.css">
+<link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="about/about.css">
-<link rel="stylesheet" href="tips/tips.css">
+<link rel="stylesheet" href="tIps/tips.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-<script src="js/error-handling.js"></script>
-  <script src="js/memory-manager.js"></script>  
-  <script src="js/utils.js" defer></script>
-  <script src="js/app/store.js" defer></script>
-  <script src="js/data/site-normalize.js" defer></script>
-  <script src="js/data/site-data.js" defer></script>
-  <script src="js/search/filter-engine.js" defer></script>
-  <script src="js/search/recommend.js" defer></script>
-  <script src="js/search/highlight.js" defer></script>
-  <script src="js/ui/scroll.js" defer></script>
-  <script src="js/ui/toast.js" defer></script>
-  <script src="js/ui/theme.js" defer></script>
-  <script src="js/ui/settings.js" defer></script>  
-  <script src="js/ui/menu.js" defer></script>
-  <script src="js/render.js" defer></script>
-  <script src="js/render/pagination.js" defer></script>
-  <script src="js/render/cards.js" defer></script>
-  <script src="js/render/sections.js" defer></script>
-  <script src="js/ui/ui-transition.js" defer></script>
-  <script src="js/tabs.js" defer></script>
-  <script src="about/about.view.js" defer></script>
-  <script src="about/about.reveal.js" defer></script>
-  <script src="tips/tips.view.js" defer></script>
-  <script src="js/ui/list-events.js" defer></script>
-  <script src="js/routing/hash-routing.js" defer></script>
-  <script src="js/main.js" defer></script>
-  <script src="js/bootstrap/init-bootstrap.js" defer></script>
+  <script type="module" src="js/main.js"></script>
 
 
   <style>
@@ -123,12 +95,10 @@
     transition: none !important;
     animation: none !important;
   }
-  /* [추가] 카드 진입 애니메이션을 담당하는 클래스들이 있을 경우 강제로 숨기거나 멈춤 */
   html.no-card-anim .link-card,
   body.no-card-anim .link-card {
     animation: none !important;
     transition: none !important;
-    /* 만약 카드가 등장할 때 opacity fade-in이 있다면 강제로 보이게 설정 */
     opacity: 1 !important; 
     transform: none !important;
   }
@@ -155,7 +125,7 @@
         <div class="top-menu-panel" role="menu">
           <a href="#/about" class="top-menu-link" role="menuitem">사이트 소개</a>
           <a
-            href="https://discord.gg/tvrsCf7b"
+            href="https://discord.gg/USGSqPJ9TE"
             target="_blank"
             rel="noopener noreferrer"
             class="top-menu-link"
@@ -193,6 +163,17 @@
             </a>
           </div>
         </div>
+
+        <div class="side-card side-mypage-card">
+          <div class="side-mypage-icon" aria-hidden="true">●</div>
+          <div>
+            <span class="side-card-title">마이페이지</span>
+            <p>저장한 사이트와 최근 기록 보기</p>
+          </div>
+          <button type="button" class="side-mypage-button" data-retention-mypage>
+            마이페이지로 이동
+          </button>
+        </div>
       </aside>
 
       <main class="main-panel">
@@ -218,11 +199,11 @@
           <option value="science">과학</option>
           <option value="social">사회</option>
           <option value="history">역사</option>
-          <option value="art">예술</option>
+          <option value="art">미술</option>
           <option value="music">음악</option>
           <option value="pe">체육</option>
-          <option value="tech">기술</option>
-          <option value="coding">코딩</option>
+          <option value="tech">기술·가정</option>
+          <option value="coding">정보(코딩)</option>
           <option value="language">외국어</option>
           <option value="general">종합</option>
           <option value="exam">시험대비</option>
@@ -248,8 +229,8 @@
     <div class="stats-item">
       <label for="itemsPerPage">📄 페이지당:</label>
       <select id="itemsPerPage">
-        <option value="5">5개</option>
-        <option value="10" selected>10개</option>
+        <option value="5" selected>5개</option>
+        <option value="10">10개</option>
         <option value="20">20개</option>
       </select>
     </div>
@@ -294,6 +275,7 @@
     <div class="detail-title-wrap">
       <img id="detailFavicon" class="detail-favicon" alt="" />
       <h2 id="detailTitle" class="detail-title">사이트 이름</h2>
+      <div class="detail-meta" id="detailMeta"></div>
       <p id="detailDesc" class="detail-desc">설명</p>
     </div>
 
@@ -303,13 +285,12 @@
     </div>
   </div>
 
-  <div class="detail-meta" id="detailMeta"></div>
-
   <h3 class="detail-subtitle">관련 추천</h3>
   <div id="detailRelated" class="detail-related"></div>
 </section>
 <!-- ✅ 상세 뷰 (해시 라우팅) 끝 -->
 <section id="aboutView" class="about-view" style="display:none;" aria-hidden="true"></section>
+<section id="retentionView" class="detail-view retention-list-view" style="display:none;" aria-hidden="true"></section>
 <!-- Tips View -->
 <section id="tipsView" class="tips-view" style="display:none;" aria-hidden="true"></section>
 
@@ -361,7 +342,7 @@
     <p class="contact-desc">
       문의는
       <a
-        href="https://discord.gg/tvrsCf7b"
+        href="https://discord.gg/USGSqPJ9TE"
         target="_blank"
         rel="noopener noreferrer"
         class="discord-link"

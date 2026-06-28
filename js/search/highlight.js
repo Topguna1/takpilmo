@@ -9,10 +9,6 @@ function escapeHtmlSafe(value) {
     .replace(/'/g, "&#039;");
 }
 
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function isChosungOnlyToken(token) {
   return /^[\u3131-\u314e]+$/.test(String(token || ""));
 }

@@ -13,19 +13,32 @@
     let timeoutId;
     const timerManager = window.memoryManager?.timerManager;
 
-    return function debounced(...args) {
+    function clearPending() {
+      if (timerManager && timeoutId) timerManager.clearTimeout(timeoutId);
+      else if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+
+    function debounced(...args) {
       const later = () => {
-        if (timerManager && timeoutId) timerManager.clearTimeout(timeoutId);
+        timeoutId = null;
         func(...args);
       };
 
-      if (timerManager && timeoutId) timerManager.clearTimeout(timeoutId);
-      else if (timeoutId) clearTimeout(timeoutId);
+      clearPending();
 
       timeoutId = timerManager
         ? timerManager.setTimeout(later, wait)
         : setTimeout(later, wait);
+    }
+
+    debounced.cancel = clearPending;
+    debounced.flush = (...args) => {
+      clearPending();
+      return func(...args);
     };
+
+    return debounced;
   }
 
   function getChosung(str) {

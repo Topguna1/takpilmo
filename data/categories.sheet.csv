@@ -1,0 +1,14 @@
+﻿key,name,icon,description,sortOrder,enabled
+learning,온라인강의,💻,,1.0,True
+info,참고자료,🔍,,2.0,True
+highschool,고입/고교학점제,📓,,3.0,True
+career,진로/대학,🎓,,4.0,True
+schoolexam,내신 대비,😵,,5.0,True
+exam,시험/기출,📝,,6.0,True
+ai,AI 활용,🤖,,7.0,True
+ppt,PPT/프레젠테이션,📊,,8.0,True
+coding,코딩/IT,💻,,9.0,True
+productivity,생산성/도구,🛠️,,10.0,True
+reading,독서/문해력,📖,,11.0,True
+art,창의/예술,🎨,,12.0,True
+explore,체험/탐구,🔬,,13.0,True

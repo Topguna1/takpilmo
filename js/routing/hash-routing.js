@@ -1,455 +1,316 @@
-function getAllSites(){
-  if (window.state && Array.isArray(window.state.sites) && window.state.sites.length) {
-    return window.state.sites;
-  }
-  // 로딩 전/백업
-  if (Array.isArray(window.initialSites) && window.initialSites.length) return window.initialSites;
-  return window.sitesData || window.allSites || [];
-}
+(function () {
+  window.App = window.App || {};
 
-
-function buildSiteIndex(){
-  const map = new Map();
-
-  const put = (k, s) => {
-    const v = String(k || "").trim();
-    if (!v) return;
-    map.set(v, s);
-    map.set(v.toLowerCase(), s); // ✅ 대소문자 무시용
-  };
-
-  for (const s of getAllSites()){
-    if (!s) continue;
-
-    // ✅ 영구키 우선
-    put(s.key, s);
-    put(s.id, s);
-    put(s.slug, s);
-    put(s.name, s);
+  function getState() {
+    return window.App?.store?.getState?.() || window.state || {};
   }
 
-  return map;
-}
-
-
-function setupHashRouting() {
-  if (setupHashRouting.__initialized && window.__route?.parseRoute) {
-    return window.__route;
-  }
-  // 1. 제어할 요소들 선택
-  const iconEl = document.getElementById('detailFavicon');
-  const detailView = document.getElementById('detailView');
-  const mainContainer = document.querySelector('.container'); // 제목, 검색창 등을 포함한 전체 래퍼
-  let savedScrollY = 0;  // 스크롤 저장
-  // 상세 뷰 내부 요소들
-  const backBtn = document.getElementById('detailBackBtn');
-  const titleEl = document.getElementById('detailTitle');
-  const descEl = document.getElementById('detailDesc');
-  const metaEl = document.getElementById('detailMeta');
-  const relatedEl = document.getElementById('detailRelated');
-  const goBtn = document.getElementById('detailGoBtn');
-  const copyBtn = document.getElementById('detailCopyBtn');
-
-  // 요소가 없으면 중단 (에러 방지)
-  if (!detailView || !mainContainer) {
-    console.error("필수 요소를 찾을 수 없습니다. (detailView or container missing)");
-    return;
+  function getAllSites() {
+    const state = getState();
+    if (Array.isArray(state.sites) && state.sites.length) return state.sites;
+    if (Array.isArray(window.initialSites) && window.initialSites.length) return window.initialSites;
+    return window.sitesData || window.allSites || [];
   }
 
-  // 데이터 인덱스 생성
-  // Prevent browser auto scroll restoration from overriding our saved position
-  try {
-    if ("scrollRestoration" in history) {
-      history.scrollRestoration = "manual";
-    }
-  } catch {}
+  function buildSiteIndex() {
+    const map = new Map();
+    const put = (key, site) => {
+      const value = String(key || "").trim();
+      if (!value) return;
+      map.set(value, site);
+      map.set(value.toLowerCase(), site);
+    };
 
-  let siteIndex = buildSiteIndex();
-  // ✅ siteIndex는 매 라우팅마다 재생성하지 말고, 데이터가 바뀌었을 때만 갱신
-  let _siteIndexSitesRef = getAllSites();
-  let _siteIndexSitesLen = Array.isArray(_siteIndexSitesRef) ? _siteIndexSitesRef.length : -1;
-
-  function ensureSiteIndexUpToDate() {
-    const list = getAllSites();
-    const len = Array.isArray(list) ? list.length : -1;
-
-    // 참조가 바뀌었거나 길이가 바뀌었거나(로드 완료 시점) 아직 없으면 재생성
-    if (!siteIndex || _siteIndexSitesRef !== list || _siteIndexSitesLen !== len) {
-      siteIndex = buildSiteIndex();
-      _siteIndexSitesRef = list;
-      _siteIndexSitesLen = len;
-    }
-  }
-
-
-  // === 화면 전환 함수 ===
-  
-  // 1) 목록 보기 (상세 뷰 숨김)
-  function restoreListScroll() {
-    const y = Number.isFinite(savedScrollY) ? savedScrollY : 0;
-    const restore = () => window.scrollTo({ top: y, behavior: "auto" });
-    requestAnimationFrame(() => {
-      restore();
-      setTimeout(restore, 0);
-      setTimeout(restore, 50);
+    getAllSites().forEach((site) => {
+      if (!site) return;
+      put(site.key, site);
+      put(site.id, site);
+      put(site.slug, site);
+      put(site.name, site);
     });
+
+    return map;
   }
 
-  function showList() {
-    detailView.style.display = 'none'; // 상세 숨김
-    detailView.setAttribute('aria-hidden', 'true');
-
-    mainContainer.style.display = '';
-    
-    // 스크롤 위치 초기화는 필요 시 주석 해제
-    // window.scrollTo({ top: 0, behavior: 'auto' });
-    // display 복구 직후, 한 프레임 뒤 복원 (레이아웃 복구 후 스크롤)
-    restoreListScroll();
-    if (typeof afterNextRender === "function") {
-      afterNextRender(restoreListScroll);
+  function setupHashRouting() {
+    if (setupHashRouting.__initialized && window.App?.router?.parseRoute) {
+      return window.App.router;
     }
-  }
 
-  // 2) 상세 보기 (목록 숨김)
-  function showDetail(site) {
-    savedScrollY = window.scrollY || 0; // 현재 스크롤 위치 저장
-    window.__currentSite = site;
-    // 검색창, 필터 등을 포함한 메인 컨테이너 전체를 숨김
-    mainContainer.style.display = 'none';
+    const listView = document.querySelector(".ui-scale-wrap");
+    const detailView = document.getElementById("detailView");
+    const aboutView = document.getElementById("aboutView");
+    const tipsView = document.getElementById("tipsView");
+    const backBtn = document.getElementById("detailBackBtn");
+    const copyBtn = document.getElementById("detailCopyBtn");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailDesc = document.getElementById("detailDesc");
+    const detailMeta = document.getElementById("detailMeta");
+    const detailRelated = document.getElementById("detailRelated");
+    const detailGoBtn = document.getElementById("detailGoBtn");
+    const detailFavicon = document.getElementById("detailFavicon");
 
-    // 상세 뷰 보이기
-    detailView.style.display = "block";
-    detailView.setAttribute('aria-hidden', 'false');
+    if (!listView || !detailView) {
+      throw new Error("Routing root elements are missing");
+    }
 
-    // --- 데이터 채우기 ---
-    
-    // 제목 & 설명 (검색어 하이라이트 적용)
-    // highlightSearchTerms 함수가 없으면 그냥 텍스트 넣도록 폴백 처리
-    const refs = {
-      highlight:
+    let savedScrollY = 0;
+    let lastListFocus = null;
+    let siteIndex = buildSiteIndex();
+    let cachedSitesRef = getAllSites();
+    let cachedSitesLen = Array.isArray(cachedSitesRef) ? cachedSitesRef.length : -1;
+
+    function ensureSiteIndexUpToDate() {
+      const list = getAllSites();
+      const len = Array.isArray(list) ? list.length : -1;
+      if (!siteIndex || cachedSitesRef !== list || cachedSitesLen !== len) {
+        siteIndex = buildSiteIndex();
+        cachedSitesRef = list;
+        cachedSitesLen = len;
+      }
+    }
+
+    function setActiveView(viewName) {
+      const views = {
+        list: listView,
+        detail: detailView,
+        about: aboutView,
+        tips: tipsView,
+      };
+
+      Object.entries(views).forEach(([name, el]) => {
+        if (!el) return;
+        const active = name === viewName;
+        el.style.display = active ? "" : "none";
+        el.setAttribute("aria-hidden", active ? "false" : "true");
+      });
+    }
+
+    function getHighlightedText(text) {
+      const query = getState().currentSearchQuery || "";
+      const highlight =
         window.ddakpilmo?.search?.highlightSearchTerms ||
-        window.highlightSearchTerms,
-      escapeHtml:
+        window.highlightSearchTerms;
+      const escapeHtml =
         window.ddakpilmo?.utils?.escapeHtml ||
         window.escapeHtml ||
-        ((value) => String(value ?? "")),
-      ageNames:
-        window.ageNames ||
-        window.ddakpilmo?.config?.ageNames ||
-        {},
-      subjectNames:
-        window.subjectNames ||
-        window.ddakpilmo?.config?.subjectNames ||
-        {},
-      getCategoryName:
+        ((value) => String(value ?? ""));
+
+      if (typeof highlight === "function") {
+        return highlight(text, query);
+      }
+      return escapeHtml(text || "");
+    }
+
+    function fillDetailMeta(site) {
+      if (!detailMeta) return;
+      detailMeta.replaceChildren();
+
+      const ageMap = window.ageNames || window.ddakpilmo?.config?.ageNames || {};
+      const subjectMap = window.subjectNames || window.ddakpilmo?.config?.subjectNames || {};
+      const getCategoryName =
         window.getCategoryName ||
         window.ddakpilmo?.config?.getCategoryName ||
-        ((key) => String(key || "")),
-    };
+        ((key) => String(key || ""));
 
-    const safeHighlight = (text) => (typeof refs.highlight === "function"
-      ? refs.highlight(text, state.currentSearchQuery)
-      : refs.escapeHtml(text || ""));
-
-    // ✅ 제목 (하이라이트 유지) + 정부 로고 붙이기 위한 래핑
-    titleEl.innerHTML = `<span class="detail-title-text">${safeHighlight(site.name || "이름 없음")}</span>`;
-
-    // ✅ 중복 방지: 기존 정부 아이콘 제거
-    titleEl.querySelectorAll(".gov-flag, .detail-gov-flag").forEach(el => el.remove());
-
-    // ✅ 정부 운영이면 제목 옆에 로고 추가
-    if (site?.isGov === true && typeof GOV_ICON_DATA_URL !== "undefined") {
-      const govIcon = document.createElement("img");
-      govIcon.className = "gov-flag korea-gov detail-gov-flag";
-      govIcon.src = GOV_ICON_DATA_URL;
-      govIcon.alt = "대한민국정부 로고";
-      govIcon.title = "대한민국 정부 운영";
-      titleEl.appendChild(govIcon);
-    }
-
-    const detail = window.siteDetailMap?.[site.key] || window.siteDetailMap?.[site.id] || null;
-    const detailText = detail?.detailDesc || detail?.description || detail?.desc || "";
-
-    const rawDesc = detailText || site.description || site.desc || '';
-    descEl.textContent = String(rawDesc ?? '').trim();
-    // 파비콘
-    if (iconEl) {
-      const faviconUrl = "https://www.google.com/s2/favicons?sz=128&domain_url=" + encodeURIComponent(site.url || '');
-      iconEl.src = faviconUrl;
-      iconEl.alt = (site.name || '') + ' favicon';
-      iconEl.style.display = site.url ? '' : 'none';
-    }
-
-    // 바로가기 버튼 링크 설정
-    const url = site.url || site.link || '#';
-    goBtn.href = url;
-
-    // 메타 정보 (태그 등)
-    metaEl.innerHTML = '';
-    const chips = [];
-
-    // ✅ 정부 운영 태그(칩)
-    if (site?.isGov === true) {
-      chips.push("🏛️ 정부 운영");
-    }
-
-    // 과목 (subjects가 배열인지 확인)
-    if (Array.isArray(site.subjects)) {
-        chips.push(`📚 ${site.subjects.map(s => refs.subjectNames[s] || s).join(', ')}`);
-    }
-    // 연령
-    if (Array.isArray(site.ages)) {
-        chips.push(`👶 ${site.ages.map(a => refs.ageNames[a] || a).join(', ')}`);
-    }
-    // 카테고리
-    if (site.category) {
-        chips.push(`📂 ${refs.getCategoryName(site.category)}`);
-    }
-
-    chips.forEach(text => {
-      const span = document.createElement('span');
-      span.className = 'detail-chip';
-      span.textContent = text;
-      metaEl.appendChild(span);
-    });
-
-    // 🔧 상세 태그를 제목 바로 아래로 이동
-    const titleWrap = document.querySelector('.detail-title-wrap');
-    const meta = document.getElementById('detailMeta');
-    const desc = document.getElementById('detailDesc');
-
-    if (titleWrap && meta && desc) {
-      // 설명(p) 바로 앞에 태그 삽입
-      titleWrap.insertBefore(meta, desc);
-    }
-
-    // --- 관련 추천 사이트 로직 ---
-    relatedEl.innerHTML = '';
-    const all = getAllSites();
-    const rel = typeof window.getRelatedSites === "function"
-      ? window.getRelatedSites(site, all, { limit: 6 })
-      : [];
-
-    if (rel.length === 0) {
-        relatedEl.innerHTML = '<p style="color:#999; font-size:14px;">관련된 추천 사이트가 없습니다.</p>';
-    } else {
-        rel.forEach(s => {
-          const a = document.createElement('a');
-          a.className = 'detail-go'; // 기존 버튼 스타일 재활용하거나 새로 만드셔도 됩니다
-          a.style.display = 'block';
-          a.style.textAlign = 'center';
-          a.style.marginTop = '8px';
-          const k = s.key || s.id; // ✅ key 우선, 호환
-          a.href = `#site=${encodeURIComponent(k)}`;
-          a.textContent = s.name;
-          relatedEl.appendChild(a);
-        });
-    }
-
-    // 상세 페이지 진입 시 스크롤 맨 위로
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }
-  
-  // === 라우팅 로직 (주소창의 # 변화 감지) ===
-  function parseRoute() {
-    ensureSiteIndexUpToDate();
-    const hash = location.hash || "";
-
-    // ✅ 1) 소개 페이지 먼저 처리
-    if (hash.startsWith("#/about")) {
-      // 기존 뷰 숨기기
-      detailView.style.display = "none";
-      detailView.setAttribute("aria-hidden", "true");
-
-      const listWrap = document.querySelector(".ui-scale-wrap");
-      if (listWrap) listWrap.style.display = "none";
-
-      // tipsView 숨기기
-      const tips = document.getElementById("tipsView");
-      if (tips) {
-        tips.style.display = "none";
-        tips.setAttribute("aria-hidden", "true");
+      const chips = [];
+      if (site?.isGov === true) chips.push("정부 운영");
+      if (Array.isArray(site?.subjects) && site.subjects.length) {
+        chips.push(`과목: ${site.subjects.map((subject) => subjectMap[subject] || subject).join(", ")}`);
+      }
+      if (Array.isArray(site?.ages) && site.ages.length) {
+        chips.push(`연령: ${site.ages.map((age) => ageMap[age] || age).join(", ")}`);
+      }
+      if (site?.category) {
+        chips.push(`카테고리: ${getCategoryName(site.category)}`);
       }
 
-      // aboutView 표시
-      const about = document.getElementById("aboutView");
-      if (about) {
-        about.style.display = "block";
-        about.setAttribute("aria-hidden", "false");
-      }
-
-      // 🔴 🔴 🔴 여기다 (이게 핵심)
-      window.renderAboutView?.();
-      window.fillAboutStats?.();
-      window.initScrollReveal?.(about);
-
-      // 소개 진입 시 상단 고정
-      window.scrollTo({ top: 0, behavior: "auto" });
-      return;
+      chips.forEach((text) => {
+        const chip = document.createElement("span");
+        chip.className = "detail-chip";
+        chip.textContent = text;
+        detailMeta.appendChild(chip);
+      });
     }
 
-    // ✅ 1-2) Tips 페이지 처리
-    if (hash.startsWith("#/tips")) {
-      // 기존 뷰 숨기기
-      detailView.style.display = "none";
-      detailView.setAttribute("aria-hidden", "true");
+    function fillRelatedSites(site) {
+      if (!detailRelated) return;
+      detailRelated.replaceChildren();
 
-      const listWrap = document.querySelector(".ui-scale-wrap");
-      if (listWrap) listWrap.style.display = "none";
+      const related = typeof window.getRelatedSites === "function"
+        ? window.getRelatedSites(site, getAllSites(), { limit: 6 })
+        : [];
 
-      const about = document.getElementById("aboutView");
-      if (about) {
-        about.style.display = "none";
-        about.setAttribute("aria-hidden", "true");
-      }
-
-      // tipsView 표시
-      const tips = document.getElementById("tipsView");
-      if (tips) {
-        tips.style.display = "block";
-        tips.setAttribute("aria-hidden", "false");
-      }
-
-      // Tips 컨텐츠 렌더링 (tips.view.js에서 정의)
-      window.renderTipsView?.();
-
-      // Tips 진입 시 상단 고정
-      window.scrollTo({ top: 0, behavior: "auto" });
-      return;
-    }
-
-
-    // ✅ 소개/팁이 아니면 해당 뷰들은 무조건 닫기
-    const about = document.getElementById("aboutView");
-    if (about) {
-      about.style.display = "none";
-      about.setAttribute("aria-hidden", "true");
-    }
-    const tips = document.getElementById("tipsView");
-    if (tips) {
-      tips.style.display = "none";
-      tips.setAttribute("aria-hidden", "true");
-    }
-    const listWrap = document.querySelector(".ui-scale-wrap");
-    if (listWrap) listWrap.style.display = "";
-
-    // ✅ 2) 상세 페이지(#site=) 처리
-    const m = hash.match(/#site=([^&]+)/);
-    if (!m) {
-      showList();
-      return;
-    }
-
-    const routeParamRaw = decodeURIComponent(m[1] || "");
-    const routeParam = routeParamRaw.trim();
-    const routeParamLower = routeParam.toLowerCase();
-
-    const site = siteIndex.get(routeParam) || siteIndex.get(routeParamLower);
-
-    if (site) {
-      const canonicalKey = String(site.key || "").trim();
-      if (canonicalKey) {
-        const canonicalHash = `#site=${encodeURIComponent(canonicalKey)}`;
-        if (location.hash !== canonicalHash) {
-          history.replaceState(null, "", canonicalHash);
-        }
-      }
-      showDetail(site);
-    } else {
-      console.warn("해당 사이트를 찾을 수 없습니다:", routeParamRaw);
-      showList();
-    }
-  }
-
-  function setView(mode) {
-    const listWrap = document.querySelector(".ui-scale-wrap");  // 목록 전체 래퍼
-    const detail = document.getElementById("detailView");
-    const about = document.getElementById("aboutView");
-
-    // 기본: 다 숨김/표시
-    if (listWrap) listWrap.style.display = (mode === "list") ? "" : "none";
-    if (detail) detail.style.display = (mode === "detail") ? "" : "none";
-    if (about) about.style.display = (mode === "about") ? "" : "none";
-
-    if (detail) detail.setAttribute("aria-hidden", mode === "detail" ? "false" : "true");
-    if (about) about.setAttribute("aria-hidden", mode === "about" ? "false" : "true");
-  }
-
-  function routeHash() {
-    const hash = location.hash || "#/";
-
-    // 소개 페이지
-    if (hash.startsWith("#/about")) {
-      setView("about");
-      // 스크롤 UX: 소개 페이지로 들어오면 상단
-      window.scrollTo({ top: 0, behavior: document.body.classList.contains("anim-off") ? "auto" : "smooth" });
-      return;
-    }
-
-    // 상세 페이지 (너 기존 로직이 있다면 그거 유지)
-    // 예: #/site/xxx 또는 #detail-xxx 등
-    // 여기서는 'about'가 아닌 경우는 일단 기존 흐름으로
-    // 상세 조건은 네 프로젝트 기준에 맞춰서 if(hash...){ setView("detail"); ... } 유지하면 됨.
-
-    // 기본: 목록
-    setView("list");
-  }
-
-  // 뒤로가기 버튼 클릭 이벤트
-  if (backBtn) {
-    backBtn.onclick = (e) => {
-      e.preventDefault();
-      // 항상 메인 목록으로 이동 (이전 상세 히스토리로 되돌아가지 않음)
-      const listHash = "#/";
-      if (location.hash !== listHash) {
-        location.hash = listHash;
+      if (!related.length) {
+        const empty = document.createElement("p");
+        empty.style.color = "#999";
+        empty.style.fontSize = "14px";
+        empty.textContent = "관련 추천 사이트가 없습니다.";
+        detailRelated.appendChild(empty);
         return;
       }
-      showList();
-    };
-  }
 
-  // URL 복사 버튼 이벤트 (상세 페이지: '사이트 주소' 복사)
-  if (copyBtn) {
-    copyBtn.onclick = async () => {
-      try {
-        const s = window.__currentSite || null;
-        const targetUrl = (s?.url || s?.link || "").trim();
+      related.forEach((relatedSite) => {
+        const link = document.createElement("a");
+        link.className = "detail-go";
+        link.style.display = "block";
+        link.style.textAlign = "center";
+        link.style.marginTop = "8px";
+        link.href = `#site=${encodeURIComponent(relatedSite.key || relatedSite.id)}`;
+        link.textContent = relatedSite.name;
+        detailRelated.appendChild(link);
+      });
+    }
 
-        // 사이트 주소가 없으면(예외) 현재 주소를 폴백으로 복사
-        const textToCopy = targetUrl || location.href;
+    function fillDetailContent(site) {
+      window.__currentSite = site;
+      if (detailTitle) {
+        detailTitle.innerHTML = `<span class="detail-title-text">${getHighlightedText(site?.name || "이름 없음")}</span>`;
+        detailTitle.querySelectorAll(".gov-flag, .detail-gov-flag").forEach((el) => el.remove());
 
-        await navigator.clipboard.writeText(textToCopy);
-
-        const originalText = copyBtn.textContent;
-        copyBtn.textContent = "✅ 복사완료";
-        setTimeout(() => (copyBtn.textContent = originalText), 1500);
-
-        // 토스트가 있으면 토스트로도 알려주기(선택)
-        if (typeof showToast === "function") {
-          showToast(targetUrl ? "사이트 주소가 복사되었습니다!" : "현재 페이지 주소가 복사되었습니다!");
+        if (site?.isGov === true && window.GOV_ICON_DATA_URL) {
+          const govIcon = document.createElement("img");
+          govIcon.className = "gov-flag korea-gov detail-gov-flag";
+          govIcon.src = window.GOV_ICON_DATA_URL;
+          govIcon.alt = "정부 운영";
+          govIcon.title = "정부 운영";
+          detailTitle.appendChild(govIcon);
         }
-      } catch (err) {
-        alert("주소 복사에 실패했습니다.");
       }
-    };
+
+      if (detailDesc) {
+        const detail = window.siteDetailMap?.[site?.key] || window.siteDetailMap?.[site?.id] || null;
+        const detailText = detail?.detailDesc || detail?.description || detail?.desc || site?.description || site?.desc || "";
+        detailDesc.textContent = String(detailText || "").trim();
+      }
+
+      if (detailFavicon) {
+        const faviconUrl = `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(site?.url || "")}`;
+        detailFavicon.src = faviconUrl;
+        detailFavicon.alt = `${site?.name || ""} favicon`;
+        detailFavicon.style.display = site?.url ? "" : "none";
+      }
+
+      if (detailGoBtn) {
+        detailGoBtn.href = site?.url || site?.link || "#";
+      }
+
+      fillDetailMeta(site);
+      fillRelatedSites(site);
+    }
+
+    function showList() {
+      setActiveView("list");
+      const afterRender = window.App?.render?.afterNextRender || window.afterNextRender;
+      Promise.resolve(typeof afterRender === "function" ? afterRender() : undefined).then(() => {
+        window.scrollTo({ top: Number.isFinite(savedScrollY) ? savedScrollY : 0, behavior: "auto" });
+        if (lastListFocus && typeof lastListFocus.focus === "function" && lastListFocus.isConnected) {
+          lastListFocus.focus({ preventScroll: true });
+          return;
+        }
+        document.getElementById("searchInput")?.focus?.({ preventScroll: true });
+      });
+    }
+
+    function showDetail(site) {
+      savedScrollY = window.scrollY || 0;
+      lastListFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      fillDetailContent(site);
+      setActiveView("detail");
+      window.scrollTo({ top: 0, behavior: "auto" });
+      requestAnimationFrame(() => {
+        backBtn?.focus?.({ preventScroll: true });
+      });
+    }
+
+    function parseRoute() {
+      ensureSiteIndexUpToDate();
+      const hash = location.hash || "#/";
+
+      if (hash.startsWith("#/about")) {
+        setActiveView("about");
+        window.renderAboutView?.();
+        window.fillAboutStats?.();
+        window.initScrollReveal?.(aboutView);
+        window.scrollTo({ top: 0, behavior: "auto" });
+        return;
+      }
+
+      if (hash.startsWith("#/tips")) {
+        setActiveView("tips");
+        window.renderTipsView?.();
+        window.scrollTo({ top: 0, behavior: "auto" });
+        return;
+      }
+
+      const match = hash.match(/#site=([^&]+)/);
+      if (!match) {
+        showList();
+        return;
+      }
+
+      const requestedKey = decodeURIComponent(match[1] || "").trim();
+      const site = siteIndex.get(requestedKey) || siteIndex.get(requestedKey.toLowerCase());
+      if (!site) {
+        console.warn("Site not found:", requestedKey);
+        showList();
+        return;
+      }
+
+      const canonicalKey = String(site.key || site.id || requestedKey).trim();
+      const canonicalHash = `#site=${encodeURIComponent(canonicalKey)}`;
+      if (location.hash !== canonicalHash) {
+        history.replaceState(null, "", canonicalHash);
+      }
+      showDetail(site);
+    }
+
+    addEventListenerWithCleanup(backBtn, "click", (e) => {
+      e.preventDefault();
+      if (location.hash !== "#/") {
+        location.hash = "#/";
+      } else {
+        showList();
+      }
+    });
+
+    addEventListenerWithCleanup(copyBtn, "click", async () => {
+      try {
+        const url = (window.__currentSite?.url || window.__currentSite?.link || "").trim();
+        await navigator.clipboard.writeText(url || location.href);
+        window.showToast?.(url ? "사이트 주소가 복사되었습니다!" : "현재 주소가 복사되었습니다!");
+      } catch {
+        window.showToast?.("복사에 실패했습니다.", "error");
+      }
+    });
+
+    if (window.__routeHashHandler) {
+      window.removeEventListener("hashchange", window.__routeHashHandler);
+    }
+    window.addEventListener("hashchange", parseRoute);
+    window.__routeHashHandler = parseRoute;
+
+    try {
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+    } catch {}
+
+    setupHashRouting.__initialized = true;
+    window.App.router = { parseRoute, setActiveView, showList, showDetail };
+    window.__route = { parseRoute };
+    parseRoute();
+    return window.App.router;
   }
 
-
-  // 브라우저 뒤로가기/앞으로가기 감지
-  if (window.__routeHashHandler) {
-    window.removeEventListener('hashchange', window.__routeHashHandler);
+  function addEventListenerWithCleanup(element, event, handler, options) {
+    if (!element) return;
+    const manager = window.memoryManager?.eventManager;
+    if (manager) manager.add(element, event, handler, options);
+    else element.addEventListener(event, handler, options);
   }
-  window.addEventListener('hashchange', parseRoute);
-  window.__routeHashHandler = parseRoute;
-  
-  // 페이지 새로고침 했을 때 현재 해시 확인 (약간의 딜레이를 주어 데이터 로드 대기)
-  parseRoute();
 
-  // 외부에서 호출할 수 있게 노출
-  setupHashRouting.__initialized = true;
-  window.__route = { parseRoute };
-}
-window.getAllSites = getAllSites;
-window.buildSiteIndex = buildSiteIndex;
-window.setupHashRouting = setupHashRouting;
+  window.getAllSites = getAllSites;
+  window.buildSiteIndex = buildSiteIndex;
+  window.setupHashRouting = setupHashRouting;
+})();

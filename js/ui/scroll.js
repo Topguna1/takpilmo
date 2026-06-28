@@ -4,8 +4,6 @@
 let scrollAnimationId = null;
 
 function smoothScrollToTop(duration = 800) {
-  const timerManager = window.memoryManager?.timerManager;
-
   // 🧹 기존 애니메이션 취소
   if (scrollAnimationId) {
     mmCancelRAF(scrollAnimationId);
@@ -76,8 +74,6 @@ function smoothScrollToTop(duration = 800) {
 function smoothScrollToCategory(category, duration = 800) {
   const targetEl = document.getElementById(`${category}-section`);
   if (!targetEl) return;
-
-  const timerManager = window.memoryManager?.timerManager;
 
   const targetY = targetEl.getBoundingClientRect().top + window.scrollY;
   const startY = window.scrollY;

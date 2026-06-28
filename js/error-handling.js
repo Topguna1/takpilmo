@@ -295,7 +295,7 @@
       });
     }
 
-    handleFaviconError(url, fallbackText) {
+    handleFaviconError(url, _fallbackText) {
       const retries = this.retryCount.get(url) || 0;
       
       if (retries < this.maxRetries) {

@@ -6,6 +6,9 @@ function buildCategoryTabs() {
   const allCats = getAllCategories();
   const keys = Object.keys(allCats);
 
+  const afterRender = window.App?.render?.afterNextRender || window.afterNextRender;
+  const applyFilters = window.App?.store?.setFilters || window.setFilters;
+
   tabs.innerHTML = "";
 
   // 전체 탭
@@ -24,10 +27,10 @@ function buildCategoryTabs() {
     .querySelectorAll(".category-section.expanded-category")
     .forEach((sec) => sec.classList.remove("expanded-category"));
 
-    setFilters({ currentCategoryFilter: "all" });
+    applyFilters?.({ currentCategoryFilter: "all" });
     window.updateSelectedFiltersSummary?.();
     updateCategoryPagingMode();
-    (window.afterNextRender ? window.afterNextRender(endCategorySwitch) : requestAnimationFrame(endCategorySwitch));
+    (afterRender ? afterRender(endCategorySwitch) : requestAnimationFrame(endCategorySwitch));
   });
 
   tabs.appendChild(allBtn);
@@ -54,10 +57,10 @@ function buildCategoryTabs() {
       const selected = document.querySelector(`.category-section#${key}-section`);
       if (selected) selected.classList.add("expanded-category");
 
-      setFilters({ currentCategoryFilter: key });
+      applyFilters?.({ currentCategoryFilter: key });
       window.updateSelectedFiltersSummary?.();
       updateCategoryPagingMode();
-      (window.afterNextRender ? window.afterNextRender(endCategorySwitch) : requestAnimationFrame(endCategorySwitch));
+      (afterRender ? afterRender(endCategorySwitch) : requestAnimationFrame(endCategorySwitch));
     });
 
     tabs.appendChild(btn);
@@ -71,3 +74,6 @@ function updateActiveTab(selectedTab) {
   selectedTab.classList.add("active");
   window.updateSelectedFiltersSummary?.();
 }
+
+window.buildCategoryTabs = buildCategoryTabs;
+window.updateActiveTab = updateActiveTab;

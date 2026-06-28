@@ -14,6 +14,7 @@
 - 🔍 키워드 검색 및 필터링
 - 🏛️ 정부 운영 사이트 구분 표시
 - 📝 사이트별 간단한 설명 제공
+- 🧭 운영자가 직접 추가하는 자료 탐색 가이드
 - 📊 Google Sheets 기반 데이터 관리
 
 ---
@@ -34,6 +35,9 @@
 
 - 사이트 목록, 카테고리: JSON
 - 상세 설명 정보: Google Sheets
+- 팁 페이지 주제 가이드: Google Sheets
+
+운영자용 주제 가이드 시트 구조는 [docs/tips-guides-sheet-schema.md](docs/tips-guides-sheet-schema.md)에 정리되어 있습니다.
 
 이 구조를 통해  
 데이터 수정은 빠르게, 서비스 로딩은 가볍게 유지합니다.

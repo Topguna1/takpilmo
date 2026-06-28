@@ -1,5 +1,9 @@
 // Pagination renderer extracted from main.js
 (function () {
+  function getState() {
+    return window.App?.store?.getState?.() || window.state || {};
+  }
+
   function renderPagination(category, totalItems) {
     const container = document.getElementById(`${category}-pagination`);
     if (!container) return;
@@ -9,8 +13,8 @@
     }
 
     const cache = container._btnCache;
-    const state = window.state || {};
-    const perPage = state.ITEMS_PER_PAGE || 10;
+    const state = getState();
+    const perPage = state.ITEMS_PER_PAGE || 5;
     const totalPages = Math.ceil(totalItems / perPage);
     if (totalPages <= 1) {
       container.replaceChildren();
@@ -75,8 +79,9 @@
         onJump(v);
         select.selectedIndex = 0;
 
-        if (typeof window.afterNextRender === "function") {
-          window.afterNextRender(() => {
+        const afterRender = window.App?.render?.afterNextRender || window.afterNextRender;
+        if (typeof afterRender === "function") {
+          afterRender(() => {
             const header = document.querySelector(`#${category}-section .category-header`);
             if (header) {
               header.setAttribute("tabindex", "-1");
