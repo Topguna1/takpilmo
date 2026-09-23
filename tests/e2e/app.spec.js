@@ -102,9 +102,13 @@ test('detail alignment, introduction whitespace and floating settings dismissal'
   await page.route('**/script.google.com/**', r => r.fulfill({json:{categories,sites,details:{RISS:{detailDesc:'첫 문장\n    들여쓴 문장\n\t탭 문장'}}}}));
   await page.setViewportSize({width:1440,height:1000});
   await ready(page,'#site=RISS');
-  const logo = await page.locator('.detail-heading .favicon').boundingBox();
-  const summary = await page.locator('.summary-card').boundingBox();
-  expect(Math.abs(logo.y-summary.y)).toBeLessThan(1);
+  // The fixture aborts favicon requests; wait for the replacement before measuring.
+  await expect(page.locator('.detail-heading .fallback-icon')).toBeVisible();
+  await expect.poll(async () => {
+    const logo = await page.locator('.detail-heading .fallback-icon').boundingBox();
+    const summary = await page.locator('.summary-card').boundingBox();
+    return logo && summary ? Math.abs(logo.y-summary.y) : Infinity;
+  }).toBeLessThan(1);
   await expect(page.locator('.site-introduction')).toHaveCSS('white-space','pre-wrap');
   expect(await page.locator('.site-introduction').textContent()).toContain('\n    들여쓴 문장');
   await page.locator('#settingsOpen').click();
