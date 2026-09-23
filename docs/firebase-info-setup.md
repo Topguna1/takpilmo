@@ -11,7 +11,7 @@
 - `infoArticles`의 `status` 오름차순 + `publishedAt` 내림차순 복합 인덱스 생성이 완료됐다.
 - Google 로그인을 활성화하고 `topguna1.github.io`, `localhost`, `127.0.0.1`을 승인된 도메인에 등록했다.
 - 관리자 Google 로그인 및 해당 UID의 `admins` 문서 등록을 완료했다. 초기 글 8편이 모두 공개되어 있으며, 비로그인 브라우저에서 운영 Firestore의 공개 목록 조회를 확인했다.
-- 변경 파일은 로컬 작업 상태이며 GitHub Pages에 배포하지 않았다. Cloudflare Pages 이전은 추후 진행한다.
+- GitHub Pages는 기존 `main` 브랜치의 정적 배포를 사용한다. 변경 사항은 PR의 CI 통과 후 반영하고 운영 주소에서 확인한다. Cloudflare Pages 이전은 추후 진행한다.
 
 내장 브라우저에서 Google 팝업이 열리지 않으면 일반 Chrome 또는 Edge로 `http://localhost:4173/#/admin/info`를 열어 로그인한다. GitHub Pages는 인증 도메인과 출처가 달라 리디렉션 로그인에도 브라우저 저장소 제한이 적용될 수 있으므로 현재는 팝업 방식을 사용한다. [Firebase 공식 안내](https://firebase.google.com/docs/auth/web/redirect-best-practices)를 참고한다.
 
