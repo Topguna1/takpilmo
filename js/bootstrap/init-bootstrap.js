@@ -5,36 +5,47 @@
   }
   window.__initBootstrapRegistered = true;
 
-  function runInitRunner() {
-    if (window.__initRunnerStarted) {
-      console.log("[bootstrap] init runner already started; skip");
-      return;
+  async function loadDetailsSafely() {
+    if (typeof window.loadDetailsFromSheet !== "function") return;
+    try {
+      await window.loadDetailsFromSheet({ cacheMinutes: 0 });
+    } catch (error) {
+      console.warn("[init] detail sheet load failed; continuing with fallback descriptions", error);
     }
-    window.__initRunnerStarted = true;
+  }
 
-    if (!window.initRunner || typeof initRunner.add !== "function") {
-      console.warn("[bootstrap] initRunner unavailable; fallback to direct init path");
-      Promise.resolve()
-        .then(() => window.loadJSONData?.())
-        .then(() => {
-          if (typeof window.init === "function") window.init();
-          window.initializeTheme?.();
-          window.setupSettingsPanel?.();
-          window.renderCategorySections?.();
-          window.buildCategoryTabs?.();
-          window.setupEventListeners?.();
-          window.setupScrollFabs?.();
-          window.ensureSiteIds?.();
-          window.initFuse?.();
-          window.renderSites?.();
-          window.setupHashRouting?.();
-        })
-        .catch((e) => window.handleInitializationFailure?.(e));
-      return;
+  async function runDirectInit() {
+    if (typeof window.loadJSONData !== "function") {
+      throw new Error("loadJSONData() is unavailable");
     }
 
+    await window.loadJSONData();
+
+    if (typeof window.init !== "function") {
+      throw new Error("init() is unavailable");
+    }
+
+    const ok = window.init();
+    if (ok === false) {
+      throw new Error("init() returned false");
+    }
+
+    await loadDetailsSafely();
+    window.ensureSiteIds?.();
+    window.initializeTheme?.();
+    window.setupSettingsPanel?.();
+    window.renderCategorySections?.();
+    window.buildCategoryTabs?.();
+    window.setupEventListeners?.();
+    window.setupScrollFabs?.();
+    window.initFuse?.();
+    window.renderSites?.();
+    window.setupHashRouting?.();
+  }
+
+  function registerRunnerSteps() {
     const addStep = (name, fn, opts) => {
-      initRunner.add(
+      window.initRunner.add(
         name,
         async () => {
           try {
@@ -49,13 +60,19 @@
     };
 
     addStep("data:load-json", async () => {
-      await loadJSONData();
+      if (typeof window.loadJSONData !== "function") {
+        throw new Error("loadJSONData() is unavailable");
+      }
+      await window.loadJSONData();
     });
 
     addStep(
       "data:prepare-state",
       () => {
-        const ok = typeof init === "function" ? init() : false;
+        if (typeof window.init !== "function") {
+          throw new Error("init() is unavailable");
+        }
+        const ok = window.init();
         if (ok === false) throw new Error("init() returned false");
       },
       { after: ["data:load-json"] }
@@ -63,17 +80,13 @@
 
     addStep(
       "data:load-details-sheet",
-      async () => {
-        await loadDetailsFromSheet({ cacheMinutes: 60 });
-      },
+      () => loadDetailsSafely(),
       { after: ["data:prepare-state"] }
     );
 
     addStep(
       "data:ensure-site-ids",
-      () => {
-        window.ensureSiteIds?.();
-      },
+      () => window.ensureSiteIds?.(),
       { after: ["data:prepare-state"] }
     );
 
@@ -130,62 +143,59 @@
       () => window.setupHashRouting?.(),
       { after: ["ui:request-render"] }
     );
-
-    addStep(
-      "ui:highlight",
-      () => {
-        const q = (
-          window.state?.currentSearchQuery ||
-          document.getElementById("searchInput")?.value ||
-          ""
-        ).trim();
-        if (q && window.ddakHighlight) {
-          const scope = document.getElementById("categoriesContainer") || document;
-          window.ddakHighlight.apply(q, scope);
-        }
-      },
-      { after: ["ui:request-render"] }
-    );
-
-    addStep(
-      "ui:sync-stats",
-      () => {
-        if (typeof updateGlobalStats === "function") updateGlobalStats();
-        else window.updateStats?.();
-      },
-      { after: ["ui:request-render"] }
-    );
-
-    initRunner.run().then((rep) => {
-      console.log("[init] report:", rep, initRunner.status());
-      if (rep?.failed?.length) {
-        window.handleInitializationFailure?.(
-          new Error(`Init failed steps: ${rep.failed.join(", ")}`)
-        );
-      }
-      if (location.hash.includes("#site=")) window.__route?.parseRoute?.();
-    });
   }
 
   function configureMemoryManagerLogLevel() {
     setTimeout(() => {
       if (window.memoryManager && window.memoryManager.setLogLevel && window.LogLevel) {
-        window.memoryManager.setLogLevel(LogLevel.WARN);
+        window.memoryManager.setLogLevel(window.LogLevel.WARN);
         console.log("[memory] log level set to WARN");
       }
     }, 1000);
   }
 
+  function runInitRunner() {
+    if (window.__initRunnerStarted) {
+      console.log("[bootstrap] init runner already started; skip");
+      return;
+    }
+    window.__initRunnerStarted = true;
+
+    if (!window.initRunner || typeof window.initRunner.add !== "function") {
+      console.warn("[bootstrap] initRunner unavailable; using direct init path");
+      runDirectInit().catch((error) => window.handleInitializationFailure?.(error));
+      return;
+    }
+
+    try {
+      registerRunnerSteps();
+    } catch (error) {
+      window.handleInitializationFailure?.(error);
+      return;
+    }
+
+    window.initRunner.run().then((report) => {
+      console.log("[init] report:", report, window.initRunner.status());
+      if (report?.failed?.length) {
+        window.handleInitializationFailure?.(
+          new Error(`Init failed steps: ${report.failed.join(", ")}`)
+        );
+        return;
+      }
+      if (location.hash.includes("#site=")) {
+        window.App?.router?.parseRoute?.() || window.__route?.parseRoute?.();
+      }
+    });
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", runInitRunner, { once: true });
-    document.addEventListener("DOMContentLoaded", configureMemoryManagerLogLevel, {
-      once: true,
-    });
+    document.addEventListener("DOMContentLoaded", configureMemoryManagerLogLevel, { once: true });
   } else {
     runInitRunner();
     configureMemoryManagerLogLevel();
   }
 
-  window.addEventListener("online", () => showToast("🌐 인터넷이 연결되었습니다"));
-  window.addEventListener("offline", () => showToast("📴 인터넷 연결이 끊어졌습니다"));
+  window.addEventListener("online", () => window.showToast?.("인터넷이 연결되었습니다"));
+  window.addEventListener("offline", () => window.showToast?.("인터넷 연결이 끊어졌습니다", "error"));
 })();

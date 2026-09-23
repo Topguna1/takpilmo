@@ -47,7 +47,7 @@
     }
 
     // 포맷팅된 메시지 생성
-    format(message, level) {
+    format(message, _level) {
       const timestamp = new Date().toLocaleTimeString();
       const prefix = this.prefix ? `[${this.prefix}] ` : '';
       return `${timestamp} ${prefix}${message}`;

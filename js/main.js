@@ -1,3 +1,73 @@
+import { installErrorHandling } from "./error-handling.module.js";
+import { installMemoryManager } from "./memory-manager.module.js";
+import { installUtils } from "./utils.module.js";
+import { installStore } from "./app/store.module.js";
+import { installSiteNormalize } from "./data/site-normalize.module.js";
+import { installSiteData } from "./data/site-data.module.js";
+import { installSearchEngine } from "./search/filter-engine.module.js";
+import { installHighlight } from "./search/highlight.module.js";
+import { installRecommend } from "./search/recommend.module.js";
+import { installRender } from "./render.module.js";
+import { installCards } from "./render/cards.module.js";
+import { installPagination } from "./render/pagination.module.js";
+import { installSections } from "./render/sections.module.js";
+import { installRouter } from "./routing/router.module.js";
+import { installInitBootstrap } from "./bootstrap/init-bootstrap.module.js";
+import { installTabs } from "./tabs.module.js";
+import { installListEvents } from "./ui/list-events.module.js";
+import { installToast } from "./ui/toast.module.js";
+import { installScroll } from "./ui/scroll.module.js";
+import { installUiTransition } from "./ui/ui-transition.module.js";
+import { installTheme } from "./ui/theme.module.js";
+import { installSettings } from "./ui/settings.module.js";
+import { installMenu } from "./ui/menu.module.js";
+import { installTipsSurfaces } from "./tips-surfaces.module.js";
+import { installRetentionStorage } from "./retention/storage.module.js";
+import { installRecentSites } from "./retention/recent.module.js";
+import { installBookmarks } from "./retention/bookmarks.module.js";
+import { installProfile } from "./retention/profile.module.js";
+import { installDailyRecommend } from "./retention/daily-recommend.module.js";
+import { installCheckin } from "./retention/checkin.module.js";
+import { installSeasonal } from "./retention/seasonal.module.js";
+import { installRetentionDashboard } from "./retention/dashboard.module.js";
+import { installAboutReveal } from "../about/about.reveal.module.js";
+import { installAboutView } from "../about/about.view.module.js";
+import { installTipsView } from "../tIps/tips.view.module.js";
+
+installErrorHandling();
+installMemoryManager();
+installUtils();
+installStore();
+installToast();
+installScroll();
+installUiTransition();
+installTheme();
+installSettings();
+installMenu();
+installRetentionStorage();
+installRecentSites();
+installBookmarks();
+installProfile();
+installDailyRecommend();
+installCheckin();
+installSeasonal();
+installTipsSurfaces();
+installAboutView();
+installAboutReveal();
+installTipsView();
+installSiteData();
+installSiteNormalize();
+installSearchEngine();
+installHighlight();
+installRecommend();
+installCards();
+installPagination();
+installSections();
+installRender();
+installRouter();
+installTabs();
+installListEvents();
+
 window.siteDetailMap = window.siteDetailMap || {};
 (function () {
   const rIC = window.requestIdleCallback || (cb => setTimeout(() => cb({ timeRemaining: () => 0 }), 1));
@@ -71,7 +141,7 @@ const GOV_ICON_DATA_URL =
   "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Emblem_of_the_Government_of_the_Republic_of_Korea.svg/250px-Emblem_of_the_Government_of_the_Republic_of_Korea.svg.png";
 window.GOV_ICON_DATA_URL = window.GOV_ICON_DATA_URL || GOV_ICON_DATA_URL;
 // ===== DOM 캐싱 =====
-const DOM = {
+const _DOM = {
   categoriesContainer: document.getElementById("categoriesContainer"),
   searchInput: document.getElementById("searchInput"),
   autocompleteList: document.getElementById("autocomplete-list"),
@@ -112,11 +182,21 @@ window.ageNames = window.ageNames || ageNames;
 window.subjectNames = window.subjectNames || subjectNames;
 window.ddakpilmo = window.ddakpilmo || {};
 window.ddakpilmo.config = window.ddakpilmo.config || {};
+window.ddakpilmo.config.contentApiUrl =
+  window.ddakpilmo.config.contentApiUrl ||
+  window.DDAKPILMO_CONTENT_API_URL ||
+  window.CONTENT_API_URL ||
+  "";
 window.ddakpilmo.config.ageNames = window.ddakpilmo.config.ageNames || window.ageNames;
 window.ddakpilmo.config.subjectNames = window.ddakpilmo.config.subjectNames || window.subjectNames;
 
 // init re-entry guard (state/actions moved to js/app/store.js)
 let __legacyInitStarted = false;
+
+function getAppState() {
+  return window.App?.store?.getState?.() || window.state || {};
+}
+
 function handleDataLoadFailure() {
   const container = document.getElementById("categoriesContainer");
   if (container) {
@@ -128,7 +208,7 @@ function handleDataLoadFailure() {
       </div>
     `;
   }
-  showToast('⚠️ 사이트 데이터를 불러올 수 없습니다', 'error');
+  window.showToast?.('⚠️ 사이트 데이터를 불러올 수 없습니다', 'error');
 }
 
 function handleInitializationFailure(error) {
@@ -157,7 +237,7 @@ window.handleInitializationFailure = handleInitializationFailure;
 
 // ==================== 데이터 접근 함수들 ====================
 function getAllCategories() { 
-  return typeof defaultCategories !== 'undefined' ? defaultCategories : {}; 
+  return window.defaultCategories || {}; 
 }
 
 function getCategoryName(key) { 
@@ -176,8 +256,9 @@ window.ddakpilmo.config.getCategoryName =
   window.ddakpilmo.config.getCategoryName || window.getCategoryName;
 // ==================== UI 업데이트 함수들 ====================
 function updateStats(totalFiltered) {
-  const total = state.sites.length;
-  const filtered = totalFiltered ?? getFilteredSites().length;
+  const state = getAppState();
+  const total = Array.isArray(state.sites) ? state.sites.length : 0;
+  const filtered = totalFiltered ?? (window.getFilteredSites?.().length || 0);
   document.getElementById("totalCount").textContent = total;
   document.getElementById("filteredCount").textContent = filtered;
   const footerSitesEl = document.getElementById("footerTotalSites");
@@ -220,7 +301,7 @@ function showSearchStats(query, totalResults) {
   const searchStats = document.createElement('div');
   searchStats.className = 'search-stats';
   searchStats.innerHTML = `
-    🔍 "<strong>${escapeHtml(query)}</strong>"에 대한 검색 결과: 
+    🔍 "<strong>${window.escapeHtml?.(query) || String(query || "")}</strong>"에 대한 검색 결과: 
     <strong>${totalResults}</strong>개 사이트 발견
   `;
   statsContainer.appendChild(searchStats);
@@ -262,23 +343,6 @@ if (window.ddakpilmo && window.ddakpilmo.faviconLoader) {
 }
 
 // 페이지네이션
-function getVisibleRangeForCategory(list, catKey) {
-  const cur = (window.state?.currentCategoryFilter ?? 'all');
-  const isAll = (cur === 'all' || cur === '전체');
-
-  if (!isAll && cur === catKey) {
-    // ✅ 카테고리 선택 상태: 이 카테고리는 '모두 보기'
-    return list; // 슬라이스 없이 전부 반환
-  }
-
-  // 기존 페이징 유지
-  const perPage = window.state?.ITEMS_PER_PAGE ?? 10;
-  const page = (window.state?.currentPageByCategory?.[catKey] ?? 1);
-  const start = (page - 1) * perPage;
-  const end = start + perPage;
-  return list.slice(start, end);
-}
-
 function updateCategoryPagingMode() {
   const cur = (window.state?.currentCategoryFilter ?? 'all');
   const isAll = (cur === 'all' || cur === '전체');
@@ -292,27 +356,36 @@ function updateCategoryPagingMode() {
 
 // ==================== 초기화 함수 ====================
 function prepareInitialSites() {
-  if (typeof initialSites === "undefined" || !Array.isArray(initialSites)) {
+  if (!Array.isArray(window.initialSites)) {
     console.error("initialSites is missing or invalid");
     return false;
   }
 
-  const normalized = window.normalizeSitesForState?.(initialSites, {
+  const normalized = window.normalizeSitesForState?.(window.initialSites, {
     ageNames: window.ageNames || ageNames,
     subjectNames: window.subjectNames || subjectNames,
     getCategoryName: window.getCategoryName || getCategoryName,
-    normalizeTextForSearch,
-    toJamoString,
-    safeGetChosung,
+    normalizeTextForSearch: window.normalizeTextForSearch,
+    toJamoString: window.toJamoString,
+    safeGetChosung: window.safeGetChosung,
   });
 
-  state.sites = (Array.isArray(normalized) ? normalized : initialSites).slice();
+  const sites = (Array.isArray(normalized) ? normalized : window.initialSites).slice();
+  const store = window.App?.store;
+  if (store?.setState) {
+    store.setState({ sites }, { render: false });
+  } else {
+    window.state = window.state || {};
+    window.state.sites = sites;
+  }
   return true;
 }
 
 function init() {
-  if (__legacyInitStarted) {
-    console.log("[init] already started; skip duplicate call");
+  const state = getAppState();
+  if (Array.isArray(state.sites) && state.sites.length > 0) {
+    __legacyInitStarted = true;
+    console.log("[init] sites already prepared; skip duplicate init");
     return true;
   }
   __legacyInitStarted = true;
@@ -337,3 +410,5 @@ window.getAllCategories = getAllCategories;
 window.getCategoryName = window.getCategoryName || getCategoryName;
 window.getCategoryIcon = getCategoryIcon;
 window.updateCategoryPagingMode = updateCategoryPagingMode;
+installRetentionDashboard();
+installInitBootstrap();

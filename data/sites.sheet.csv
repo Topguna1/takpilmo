@@ -1,0 +1,162 @@
+﻿key,name,url,desc,category,ages,subjects,isGov,sortOrder,enabled
+EBS,EBS,https://www.ebs.co.kr/,전 국민의 평생학교 EBS,learning,"elem,mid,high","korean,math,science,social",True,1.0,True
+EBSmidpremium,EBS 중학프리미엄,https://mid.ebs.co.kr/,중학생 대상 전 과목 온라인 강의,learning,mid,"korean,math,science,social",True,2.0,True
+EBSi,EBSi,https://www.ebsi.co.kr/,EBS 고등 온라인 강의,learning,high,"korean,math,english,science",True,3.0,True
+KOCW,KOCW,http://www.kocw.net/,국내 대학 공개강의 서비스,learning,"high,adult",general,True,4.0,True
+KMOOC,K-MOOC,https://www.kmooc.kr/,한국형 온라인 공개강좌,learning,"high,adult",general,True,5.0,True
+KhanAcademy,Khan Academy,https://ko.khanacademy.org/,무료 온라인 교육 플랫폼,learning,"elem,mid,high","korean,math,science,history",False,6.0,True
+메가스터디,메가스터디,https://www.megastudy.net/,중고등 학생 대상 강의,learning,"mid,high","korean,math,english,science",False,7.0,True
+야나두,야나두,http://yanadoo.co.kr/,영어 학습,learning,"mid,high,adult","english,language",False,8.0,True
+Coursera,Coursera,https://www.coursera.org/,전 세계 대학 및 기업의 온라인 강좌,learning,"high,adult","general,language",False,9.0,True
+edX,edX,https://www.edx.org/,무료 및 유료 대학 온라인 강의 제공,learning,"high,adult",general,False,10.0,True
+MIT OpenCourseWare,MIT OpenCourseWare,https://ocw.mit.edu/,MIT 공개 강의 자료,learning,"high,adult","science,tech",False,11.0,True
+Skillshare,Skillshare,https://www.skillshare.com/,"디자인, 코딩, 영상 등 실무 학습",learning,"high,adult","art,tech",False,12.0,True
+스터디채널,스터디채널,http://studych.co.kr/,수능 및 내신 강의 플랫폼,learning,"mid,high","korean,math,english",False,13.0,True
+에듀윌,에듀윌,https://www.eduwill.net/,자격증·공무원 시험 대비 강의,learning,"high,adult","exam,career",False,14.0,True
+클래스101,클래스101,https://class101.net/,취미 및 실무 온라인 클래스,learning,"mid,high,adult","art,tech,general",False,15.0,True
+탈잉,탈잉,https://taling.me/,1:1 맞춤형 온라인 클래스,learning,"mid,high,adult","general,art,tech",False,16.0,True
+Udemy,Udemy,https://www.udemy.com/,다양한 주제의 온라인 강의,learning,"high,adult","general,tech,art",False,17.0,True
+RISS,RISS,http://www.riss.kr/,학술 자료 및 논문 검색,info,"high,adult",general,True,18.0,True
+공공데이터포털,공공데이터포털,https://www.data.go.kr/,정부 및 공공기관 데이터 제공,info,"high,adult","social,tech",True,19.0,True
+국립중앙도서관,국립중앙도서관,https://www.nl.go.kr/,디지털 자료 및 자료 검색,info,"mid,high,adult",general,True,20.0,True
+NTIS,국가과학기술지식정보서비스(NTIS),https://www.ntis.go.kr/,과학/기술 자료 검색,info,"mid,high,adult","science,tech",True,21.0,True
+국사편찬위원회,국사편찬위원회,https://www.history.go.kr/,한국사 관련 사료와 자료 제공,info,"mid,high,adult",history,True,22.0,True
+한국사데이터베이스,한국사데이터베이스,https://db.history.go.kr/,한국사 관련 자료 검색,info,"mid,high,adult",history,True,23.0,True
+한국고전종합,한국고전종합DB,https://db.itkc.or.kr/,한국 고전 문헌 자료,info,"mid,high,adult","korean,history",True,24.0,True
+KERIS,한국교육학술정보원(KERIS),https://www.keris.or.kr/,교육 연구 및 정보 제공,info,"mid,high,adult",general,True,25.0,True
+KOSIS,국가통계포털(KOSIS),https://kosis.kr/,통계청 공식 통계 데이터,info,"high,adult","social,math",True,26.0,True
+DBpia,DBpia,https://www.dbpia.co.kr/,학술 논문 및 자료 검색,info,"high,adult","general,science,social",False,27.0,True
+KISS,KISS,https://kiss.kstudy.com/,국내 학술 논문 자료,info,"high,adult","general,social",False,28.0,True
+교보스콜라,교보스콜라,https://scholar.kyobobook.co.kr/,학술 도서 및 논문 검색,reading,"high,adult",general,False,29.0,True
+네이버학술정보,네이버 학술정보,https://academic.naver.com/,논문 및 연구자료 검색,info,"high,adult",general,False,30.0,True
+GoogleScholar,Google Scholar,https://scholar.google.com/,학술 논문 및 자료 검색,info,"high,adult",general,False,31.0,True
+서울열린데이터광장,서울열린데이터광장,https://data.seoul.go.kr/,서울시 공공데이터 포털,info,"high,adult","social,tech",True,32.0,True
+위키백과,위키백과,https://ko.wikipedia.org/,자유 백과사전,info,"mid,high,adult",general,False,33.0,True
+나무위키,나무위키,https://namu.wiki/,한국판 위키(정보 부정확 함),info,"mid,high,adult",general,False,34.0,True
+국립중앙과학관,국립중앙과학관,https://www.science.go.kr/,과학 체험 및 교육 정보,info,"elem,mid,high",science,True,35.0,True
+에듀넷,에듀넷,https://www.edunet.net/,교사·학생용 참고자료,info,"elem,mid,high",general,True,36.0,True
+네이버지식백과,네이버 지식백과,https://terms.naver.com/,한국어 전문 지식 콘텐츠,info,"mid,high,adult",general,False,37.0,True
+브리태니커백과사전,브리태니커 백과사전,https://www.britannica.com/,영어권 대표 백과사전,info,"mid,high,adult",general,False,38.0,True
+ScienceDirect,ScienceDirect,https://www.sciencedirect.com/,과학 및 기술 논문 검색,info,"high,adult","science,tech",False,39.0,True
+PubMed,PubMed,https://pubmed.ncbi.nlm.nih.gov/,의학 및 생명과학 논문 검색,info,"high,adult",science,False,40.0,True
+오픈국회정보포털,오픈국회정보포털,https://open.assembly.go.kr/,국회 자료·법안 검색,info,"high,adult","social,history",True,41.0,True
+국가기록원,국가기록원,https://www.archives.go.kr/,역사/행정 과제 자료 제공,info,"high,adult","history,social",True,42.0,True
+E나라지표,E나라지표,https://www.index.go.kr/,국가 주요 지표 통계,info,"high,adult","social,math",True,43.0,True
+법제처국가법령정보센터,법제처 국가법령정보센터,https://www.law.go.kr/,법률 및 과제 참고자료,info,"high,adult",social,True,44.0,True
+국토연구원,국토연구원,https://www.krihs.re.kr/,도시·환경 관련 연구자료,info,"high,adult","social,science",True,45.0,True
+교육부,교육부,https://www.moe.go.kr/,교육부 공식 사이트,highschool,"mid,high",general,True,46.0,True
+고입정보포털,고입정보포털,https://www.hischool.go.kr,고등학교 유형벌 입학정보(대부분의 지역이 다 있음),highschool,"mid,high",general,True,47.0,True
+경기도교육청,경기도교육청 고등학교 입학전학 포털,https://satp.goe.go.kr/,경기도 고입 및 전학 정보,highschool,"mid,high",general,True,48.0,True
+서울특별시교육청,서울특별시교육청,https://www.sen.go.kr/,서울시 고입 및 전학 정보,highschool,"mid,high",general,True,49.0,True
+인천광역시교육청,인천광역시교육청 고등학교 입학전학포털,https://isatp.ice.go.kr/,인천시 고입 및 전학 정보,highschool,"mid,high",general,True,50.0,True
+경상남도교육청,경상남도교육청 고입 포털,https://highschool.gne.go.kr/,경상남도 고입 및 전학 정보,highschool,"mid,high",general,True,51.0,True
+경상북도교육청,경상북도교육청 온라인 고입전형포털,https://hischoolgbe.kr/,경상북도 고입 및 전학 정보,highschool,"mid,high",general,True,52.0,True
+충청남도교육청,충청남도교육청 고등학교 입학전형포털,https://satp.cne.go.kr/,충남 고입 및 전학 정보,highschool,"mid,high",general,True,53.0,True
+충청북도교육청,충청북도교육청 고등학교 입학전형포털,https://hsap.cbe.go.kr/,충북 고입 및 전학 정보,highschool,"mid,high",general,True,54.0,True
+전북특별자치도교육청,전북특별자치도교육청 고등학교 입학전형포털,https://satp.jbe.go.kr/,전북특별자치도 고입 및 전학 정보,highschool,"mid,high",general,True,55.0,True
+Modoo,교육정보 Modoo,https://www.jne.go.kr/modoo/main.do,전라남도교육청의 교육정보,highschool,"mid,high",general,True,56.0,True
+부산광역시교육청,부산광역시교육청 고입포털,https://home.pen.go.kr/,부산광역시 고입 및 전학 정보,highschool,"mid,high",general,True,57.0,True
+강원특별자치도교육청,강원특별자치도교육청 - 고입자료실,https://hsap.cbe.go.kr/,강원특별자치도 고입 및 전학 정보,highschool,"mid,high",general,True,58.0,True
+대구광역시교육청,대구광역시교육청,https://www.dge.go.kr/,대구광역시 교육 정보,highschool,"mid,high",general,True,59.0,True
+대전광역시교육청,대전광역시교육청,https://www.dje.go.kr/,대전광역시 교육 정보,highschool,"mid,high",general,True,60.0,True
+울산광역시교육청,울산광역시교육청 진로진학지원센터,https://use.go.kr/jinhak/index.do,울산광역시 진로진학지원 정보,highschool,"mid,high",general,True,61.0,True
+세종특별자치시교육청,세종특별자치시교육청,https://www.sje.go.kr/,세종특별자치시 교육 정보,highschool,"mid,high",general,True,62.0,True
+제주특별자치도교육청,제주특별자치도교육청,https://www.jje.go.kr/,제주특별자치도 교육 정보,highschool,"mid,high",general,True,63.0,True
+광주광역시교육청,광주광역시교육청,https://www.gen.go.kr/,광주광역시 교육 정보,highschool,"mid,high",general,True,64.0,True
+학교알리미,학교알리미,https://www.schoolinfo.go.kr,고등학교 학교정보 및 평가,highschool,"mid,high",general,True,65.0,True
+커리어넷,커리어넷,https://www.career.go.kr/,진로 상담 및 직업 정보,career,"high,adult",career,True,66.0,True
+대학알리미,대학알리미,https://www.academyinfo.go.kr/,대학 입학 정보,career,"high,adult",career,True,67.0,True
+에듀윌,에듀윌,https://www.eduwill.net/,진로·자격증 정보,career,"high,adult",career,False,68.0,True
+진학사,진학사,https://www.jinhak.com/,대입 정보 및 상담,career,high,career,False,69.0,True
+유웨이,유웨이,https://www.uway.com/,대입 원서접수 및 진학 정보,career,high,career,False,70.0,True
+종로학원,종로학원,https://www.jongro.co.kr/,입시 분석 및 진학 상담,career,high,career,False,71.0,True
+한국장학재단,한국장학재단,https://www.kosaf.go.kr/,장학금 및 학자금 대출 정보,career,"high,adult",career,True,72.0,True
+잡코리아,잡코리아,https://www.jobkorea.co.kr/,취업 정보 및 채용 공고,career,"high,adult",career,False,73.0,True
+사람인,사람인,https://www.saramin.co.kr/,취업 정보 및 채용 공고,career,"high,adult",career,False,74.0,True
+어디가,어디가,https://www.adiga.kr/,대입 정보 포털(한국대학교육협의회),career,high,career,False,75.0,True
+ChatGPT,ChatGPT,https://chat.com/,너 정말 핵심을 찔렀어,ai,"mid,high,adult",general,False,76.0,True
+Gemini,Gemini,https://gemini.google.com/,잼미니,ai,"mid,high,adult",general,False,77.0,True
+Claude,Claude,https://claude.ai/,코딩 잘함,ai,"mid,high,adult",general,False,78.0,True
+Perplexity,Perplexity,https://www.perplexity.ai/,정보 찾는 GPT,ai,"mid,high,adult",general,False,79.0,True
+deepl,deepl,https://www.deepl.com,번역 특화,ai,"mid,high,adult","english,language",False,80.0,True
+Gamma,Gamma,https://gamma.app/,PPT 제작 ,ai,"mid,high,adult",general,False,81.0,True
+Jasper,Jasper,https://www.jasper.ai/,마케팅에 특화된 GPT,ai,"mid,high,adult",general,False,82.0,True
+Writesonic,Writesonic,https://writesonic.com/,글쓰기 도우미 GPT,ai,"mid,high,adult",general,False,83.0,True
+QuillBot,QuillBot,https://quillbot.com/,문장 재구성 및 교정 GPT,ai,"mid,high,adult",general,False,84.0,True
+Grammarly,Grammarly,https://www.grammarly.com/,영어 글쓰기 교정 도구,ai,"mid,high,adult","english,language",False,85.0,True
+Gamma,Gamma,https://gamma.app/,PPT 제작,ppt,"mid,high,adult",general,False,86.0,True
+slidesgo,slidesgo,https://slidesgo.com/,AI + 다양한 PPT 템플릿 제공,ppt,"mid,high,adult","general,art",False,87.0,True
+Canva,Canva,https://www.canva.com/,간편한 디자인 및 프레젠테이션 도구,ppt,"mid,high,adult","general,art",False,88.0,True
+미리캔버스,미리캔버스,https://www.miricanvas.com/ko,한국형 디자인 도구,ppt,"mid,high,adult","general,art",False,89.0,True
+Pixabay,Pixabay,https://pixabay.com/ko/,저작권 걱정 없는 무료 고화질 이미지,ppt,"mid,high,adult","general,art",False,90.0,True
+망고보드,망고보드,https://www.mangoboard.net/,온라인 디자인 및 프레젠테이션,ppt,"mid,high,adult","general,art",False,91.0,True
+pngimg,pngimg,https://pngimg.com/,무료 PNG 이미지 제공,ppt,"mid,high,adult","general,art",False,92.0,True
+manypixels,manypixels,https://www.manypixels.co/gallery,ppt 사용에 좋은 무료 일러스트 및 아이콘 제공,ppt,"mid,high,adult","general,art",False,93.0,True
+storyset,storyset,https://storyset.com/,ppt 사용에 좋은 일러스트 제공,ppt,"mid,high,adult","general,art",False,94.0,True
+Visme,Visme,https://www.visme.co/,시각적 콘텐츠 제작 도구,ppt,"mid,high,adult","general,art",False,95.0,True
+slidescarnival,slidescarnival,https://www.slidescarnival.com/,무료 프레젠테이션 템플릿,ppt,"mid,high,adult","general,art",False,96.0,True
+Prezi,Prezi,https://prezi.com/,동적 프레젠테이션 도구,ppt,"mid,high,adult","general,art",False,97.0,True
+google slides,google slides,https://www.google.com/slides/about/,구글의 프레젠테이션 도구,ppt,"mid,high,adult","general,art",False,98.0,True
+Powerpoint,Powerpoint,https://www.microsoft.com/ko-kr/microsoft-365/powerpoint,MS의 프레젠테이션 도구,ppt,"mid,high,adult","general,art",False,99.0,True
+토익,Toeic(토익),https://www.toeic.co.kr/,토익 시험 자료,exam,"high,adult",exam,False,100.0,True
+대한상공회의소자격평가사업단,대한상공회의소 자격평가사업단,https://license.korcham.net/,대한민국의 상공회의소,exam,"high,adult",exam,True,101.0,True
+한국사 능력검정시험,한국사 능력검정시험,https://www.historyexam.go.kr/,한국사 시험 대비 자료,exam,"mid,high",exam,True,102.0,True
+수능모의고사,수능 모의고사 자료,https://www.kice.re.kr/,수능 기출 및 모의고사 자료,exam,high,exam,True,103.0,True
+SATPractice,SAT Practice,https://collegereadiness.collegeboard.org/sat/practice,SAT 시험 연습 사이트,exam,"high,adult","exam,english",False,104.0,True
+NEIS,NEIS,https://neis.go.kr/,학교 시험 관련 자료,exam,"mid,high",exam,True,105.0,True
+대성마이맥,대성마이맥,https://www.mimacstudy.com/,수능 기출 및 모의고사 자료,exam,high,"exam,korean,math,english",False,106.0,True
+EBSi,EBSi,https://www.ebsi.co.kr/,EBS 고등 온라인 강의,exam,high,"exam,korean,math,english",False,107.0,True
+YBM,YBM 시사영어사,https://www.ybmbooks.com/,영어 시험 대비 자료,exam,"high,adult","exam,english",False,108.0,True
+에듀넷,에듀넷,https://www.edunet.net/nedu/digitaltextbook/,교육부 디지털 교과서,exam,"elem,mid,high",general,True,109.0,True
+Inflearn,Inflearn,https://www.inflearn.com/,국내 온라인 IT/코딩 강의,coding,"mid,high,adult","coding,tech",False,110.0,True
+CodeUp,CodeUp,https://codeup.kr/,코딩 테스트 및 알고리즘 연습,coding,"mid,high,adult",coding,False,111.0,True
+Programmers,Programmers,https://programmers.co.kr/,개발자 실습/스터디,coding,"high,adult","coding,tech",False,112.0,True
+Fast Campus Coding,Fast Campus Coding,https://fastcampus.co.kr/dev_online,실무 코딩 강의,coding,"high,adult","coding,tech",False,113.0,True
+코드잇,코드잇,https://www.codeit.kr/,실무형 온라인 코딩 강의,coding,"mid,high,adult",coding,False,114.0,True
+엘리스 AI 트랙,엘리스 AI 트랙,https://elice.io/,AI/코딩 온라인 학습,coding,"high,adult","coding,tech",False,115.0,True
+Codecademy,Codecademy,https://www.codecademy.com/,인터랙티브 코딩 학습,coding,"mid,high,adult",coding,False,116.0,True
+LeetCode,LeetCode,https://leetcode.com/,코딩 인터뷰 준비 및 문제 풀이,coding,"high,adult",coding,False,117.0,True
+HackerRank,HackerRank,https://www.hackerrank.com/,코딩 챌린지 및 연습,coding,"high,adult",coding,False,118.0,True
+GitHub,GitHub,https://github.com/,코드 저장소 및 협업 플랫폼,coding,"high,adult","coding,tech",False,119.0,True
+Stack Overflow,Stack Overflow,https://stackoverflow.com/,개발자 Q&A 커뮤니티,coding,"high,adult","coding,tech",False,120.0,True
+Notion,Notion,https://www.notion.so/,"노트, 학습 계획 및 자료 정리",productivity,"mid,high,adult",general,False,121.0,True
+GoogleWorkspace,Google Workspace,https://workspace.google.com/,"문서, 스프레드시트 등 학습 도구",productivity,"mid,high,adult",general,False,122.0,True
+카카오워크,카카오워크,https://www.kakaowork.com/,협업 및 자료 공유 도구,productivity,"mid,high,adult",general,False,123.0,True
+Todoist,Todoist,https://todoist.com/,할 일 관리 및 학습 계획,productivity,"mid,high,adult",general,False,124.0,True
+에버노트,에버노트,https://evernote.com/intl/ko,학습 노트 및 정리 도구,productivity,"mid,high,adult",general,False,125.0,True
+한컴독스,한컴독스,https://www.hancomdocs.com/ko/,한글 기반 클라우드 협업 툴,productivity,"mid,high,adult",general,False,126.0,True
+Trello,Trello,https://trello.com/,칸반 방식 일정 관리,productivity,"high,adult",general,False,127.0,True
+MsOneNote,Microsoft OneNote,https://www.onenote.com/,디지털 노트 작성 및 정리,productivity,"mid,high,adult",general,False,128.0,True
+국립어린이청소년도서관,국립어린이청소년도서관,https://www.nlcy.go.kr/,어린이·청소년 독서자료 제공,reading,"elem,mid","korean,general",True,129.0,True
+리딩게이트,리딩게이트,https://www.readinggate.com/,온라인 영어 독서 프로그램,reading,"elem,mid","english,language",False,130.0,True
+교보문고,교보문고,https://www.kyobobook.co.kr/ebook/,전자책 및 학습용 도서,reading,"elem,mid,high","korean,general",False,131.0,True
+Yes24,Yes24,https://www.yes24.com/Books/Edu,청소년 맞춤 독서 자료,reading,"mid,high","korean,general",False,132.0,True
+서울도서관,서울도서관,https://lib.seoul.go.kr/,전자책 및 자료 대출 서비스,reading,"mid,high,adult","general,korean",True,133.0,True
+교보스콜라,교보스콜라,https://scholar.kyobobook.co.kr/,학술 도서 및 논문 검색,reading,"high,adult",general,False,134.0,True
+OpenLibrary,Open Library,https://openlibrary.org/,무료 전자책 및 도서관,reading,"mid,high,adult","general,korean",False,135.0,True
+ProjectGutenberg,Project Gutenberg,https://www.gutenberg.org/,무료 전자책 제공,reading,"mid,high,adult","general,korean",False,136.0,True
+LibriVox,LibriVox,https://librivox.org/,무료 오디오북 제공,reading,"mid,high,adult","general,korean",False,137.0,True
+구글아트앤컬처,구글 아트 앤 컬처,https://artsandculture.google.com/,전 세계 예술 작품 탐험,art,"mid,high,adult","art,history",False,138.0,True
+국립현대미술관,국립현대미술관,https://www.mmca.go.kr/,현대미술 전시 및 교육 자료,art,"mid,high,adult",art,True,139.0,True
+한국문화예술위원회,한국문화예술위원회,https://www.arko.or.kr/,문화예술 자료와 연구 지원,art,"high,adult",art,True,140.0,True
+서울문화재단,서울문화재단,https://www.sfac.or.kr/,문화예술 교육 및 체험,art,"mid,high","art,music",True,141.0,True
+예술경영지원센터,예술경영지원센터,https://www.gokams.or.kr/,예술 관련 연구 및 자료,art,"high,adult","art,music",True,142.0,True
+한국예술종합학교,K-Arts 한국예술종합학교,https://www.karts.ac.kr/,예술 전문 교육 자료,art,"high,adult","art,design,music",False,143.0,True
+뮤직메이트,뮤직메이트,https://www.musicmate.co.kr/,온라인 음악 교육 플랫폼,art,"elem,mid,high",music,False,144.0,True
+클래스101예술,클래스101 예술,https://class101.net/categories/art,온라인 예술 클래스,art,"mid,high,adult","art,design",False,145.0,True
+Behance,Behance,https://www.behance.net/,디자인 및 예술 작품 공유 플랫폼,art,"high,adult","art,design",False,146.0,True
+DeviantArt,DeviantArt,https://www.deviantart.com/,예술가 커뮤니티 및 작품 공유,art,"high,adult",art,False,147.0,True
+NASAKids,NASA Kids Club,https://www.nasa.gov/kidsclub/index.html,우주 과학 체험 학습,explore,"elem,mid",science,False,148.0,True
+국립과천과학관,국립과천과학관,https://www.sciencecenter.go.kr/,과학 실험·전시·탐구 활동,explore,"elem,mid,high",science,True,149.0,True
+서울대공원 동물원,서울대공원 동물원,https://grandpark.seoul.go.kr/,생물학 및 환경학 학습 체험,explore,"elem,mid","science,social",True,150.0,True
+국립민속박물관,국립민속박물관,https://www.nfm.go.kr/,한국 전통 문화 체험,explore,"elem,mid,high","history,social",True,151.0,True
+국립중앙박물관,국립중앙박물관,https://www.museum.go.kr/,역사·문화 체험 자료,explore,"elem,mid,high","history,social",True,152.0,True
+e뮤지엄,e-뮤지엄,https://www.emuseum.go.kr/main,전국 박물관 소장품 감상 가능,explore,"elem,mid,high",science,True,153.0,True
+국립생태원,국립생태원,https://www.nie.re.kr/,생태 체험 학습 자료,explore,"elem,mid,high",science,True,154.0,True
+국립해양생물자원관,국립해양생물자원관,https://www.mabik.re.kr/,해양 생물 탐구 및 자료 제공,explore,"elem,mid,high",science,True,155.0,True
+족보닷컴,족보닷컴,https://www.zocbo.com/,중·고등 전과목 내신대비 문제 자료,schoolexam,"mid, high","korean, math, science, english, exam, history, social, language",False,156.0,True
+내신코치,내신코치,https://www.nscoach.com/,내신 기출 문제 제공 사이트,schoolexam,"mid, high","korean, math, science, english, social",False,157.0,True
+EBSi,EBSi,https://www.ebsi.co.kr/,아시죠?,schoolexam,"mid, high","korean, math, science, english, social",True,158.0,True
+나무아카,나무아카데미,https://namuacademy.com/,중 고등 국어 내신 기출 자료,schoolexam,"mid, high",korean,False,159.0,True
+파스칼,파스칼 수학 자료실,https://www.pascal.education/main/,중 고등 수학 내신 기출 자료,schoolexam,"mid, high",math,False,160.0,True
+exam4you,EXAM4YOU,https://exam4you.com/,중·고등 영어 내신 대비 자료,schoolexam,"mid, high",english,False,161.0,True

@@ -1,8 +1,12 @@
+function getUiState() {
+  return window.App?.store?.getState?.() || window.state || {};
+}
+
 function updateSelectedFiltersSummary() {
   const host = document.getElementById("activeFilterSummary");
   if (!host) return;
 
-  const refs = window.state || {};
+  const refs = getUiState();
   const ageMap = window.ageNames || {};
   const subjectMap = window.subjectNames || {};
   const getCategoryNameSafe =
@@ -14,41 +18,30 @@ function updateSelectedFiltersSummary() {
     window.escapeHtml ||
     ((value) => String(value ?? ""));
 
-  const ageKey = refs.currentAgeFilter || "all";
-  const subjectKey = refs.currentSubjectFilter || "all";
-  const categoryKey = refs.currentCategoryFilter || "all";
-  const govKey = refs.currentGovFilter || "all";
-
   const chips = [
     {
-      label: "\uC5F0\uB839\uB300",
-      value: ageKey === "all" ? "\uC804\uCCB4" : (ageMap[ageKey] || ageKey),
-      isAll: ageKey === "all",
+      label: "연령대",
+      value: refs.currentAgeFilter === "all" ? "전체" : (ageMap[refs.currentAgeFilter] || refs.currentAgeFilter || "전체"),
+      isAll: refs.currentAgeFilter === "all",
     },
     {
-      label: "\uACFC\uBAA9",
-      value:
-        subjectKey === "all"
-          ? "\uC804\uCCB4 \uACFC\uBAA9"
-          : (subjectMap[subjectKey] || subjectKey),
-      isAll: subjectKey === "all",
+      label: "과목",
+      value: refs.currentSubjectFilter === "all" ? "전체 과목" : (subjectMap[refs.currentSubjectFilter] || refs.currentSubjectFilter || "전체 과목"),
+      isAll: refs.currentSubjectFilter === "all",
     },
     {
-      label: "\uCE74\uD14C\uACE0\uB9AC",
-      value:
-        categoryKey === "all"
-          ? "\uC804\uCCB4"
-          : getCategoryNameSafe(categoryKey),
-      isAll: categoryKey === "all",
+      label: "카테고리",
+      value: refs.currentCategoryFilter === "all" ? "전체" : getCategoryNameSafe(refs.currentCategoryFilter),
+      isAll: refs.currentCategoryFilter === "all",
     },
     {
-      label: "\uC815\uBD80 \uC6B4\uC601",
-      value: govKey === "all" ? "\uC804\uCCB4" : "\uC815\uBD80 \uC6B4\uC601",
-      isAll: govKey === "all",
+      label: "정부 운영",
+      value: refs.currentGovFilter === "all" ? "전체" : "정부 운영",
+      isAll: refs.currentGovFilter === "all",
     },
   ];
 
-  const title = '<span class="active-filter-summary-title">✅ \uC120\uD0DD\uB41C \uD544\uD130</span>';
+  const title = '<span class="active-filter-summary-title">선택된 필터</span>';
   const chipHtml = chips
     .map((chip) => {
       const chipClass = chip.isAll ? "active-filter-chip is-all" : "active-filter-chip is-active";
@@ -61,350 +54,285 @@ function updateSelectedFiltersSummary() {
 
 window.updateSelectedFiltersSummary = updateSelectedFiltersSummary;
 
-// ==================== 이벤트 리스너 설정 ====================
 function setupEventListeners() {
   if (setupEventListeners.__initialized) {
     console.log("[init] setupEventListeners already initialized; skip");
     return;
   }
-  console.log("⚙ 메모리 안전 이벤트 리스너 설정 시작...");
 
   const manager = window.memoryManager?.eventManager;
+  const add = (el, evt, fn, opt) => {
+    if (!el) return;
+    if (manager) manager.add(el, evt, fn, opt);
+    else el.addEventListener(evt, fn, opt);
+  };
+  const store = window.App?.store;
+  const setFilters = store?.setFilters || window.setFilters;
+  const setState = store?.setState || window.setState;
 
-  if (!manager) {
-    console.warn("⚠ 메모리 관리자 없음. 기본 방식 사용");
-    if (typeof setupEventListenersOriginal === "function") {
-      setupEventListenersOriginal();
+  const searchInput = document.getElementById("searchInput");
+  const autocompleteList = document.getElementById("autocomplete-list");
+  const mainPanel = document.querySelector(".main-panel");
+  const highlight =
+    window.ddakpilmo?.search?.highlightSearchTerms ||
+    window.highlightSearchTerms ||
+    null;
+  const escape =
+    window.ddakpilmo?.utils?.escapeHtml ||
+    window.escapeHtml ||
+    ((value) => String(value ?? ""));
+
+  if (!searchInput || !autocompleteList) {
+    throw new Error("Missing search input or autocomplete list");
+  }
+
+  let currentFocus = -1;
+  let isComposing = false;
+  let lastCommittedQuery = String(searchInput.value || "").trim();
+
+  const debouncedSearch = (window.debounce || ((fn) => fn))((value) => {
+    try {
+      setFilters?.({ currentSearchQuery: value });
+    } catch (error) {
+      console.error("Search update failed:", error);
+    }
+  }, 300);
+
+  function clearAutocomplete() {
+    autocompleteList.innerHTML = "";
+    currentFocus = -1;
+  }
+
+  function commitSearch(query, options = {}) {
+    const normalized = String(query || "").trim();
+    if (!options.force && normalized === lastCommittedQuery) {
+      updateAutocomplete(normalized);
+      return;
+    }
+
+    if (options.immediate) {
+      debouncedSearch.cancel?.();
+      setFilters?.({ currentSearchQuery: normalized });
     } else {
-      const ipt = document.getElementById("searchInput");
-      if (ipt && !ipt.__bound) {
-        ipt.__bound = true;
-      }
+      debouncedSearch(normalized);
     }
-    setupEventListeners.__initialized = true;
-    updateSelectedFiltersSummary();
-    return;
+    lastCommittedQuery = normalized;
+    updateAutocomplete(normalized);
   }
 
-  try {
-    const searchInput = document.getElementById("searchInput");
-    const autocompleteList = document.getElementById("autocomplete-list");
-    const highlight =
-      window.ddakpilmo?.search?.highlightSearchTerms ||
-      window.highlightSearchTerms ||
-      null;
-    const escape =
-      window.ddakpilmo?.utils?.escapeHtml ||
-      window.escapeHtml ||
-      ((value) => String(value ?? ""));
-    // ==================== 카드 클릭/상세 버튼 이벤트 위임 ====================
-    const cardsContainer = document.getElementById("categoriesContainer");
-    if (cardsContainer && !cardsContainer.__delegationBound) {
-      const onContainerClick = (e) => {
-        const card = e.target.closest(".link-card");
-        if (!card) return;
+  function getSites() {
+    const state = getUiState();
+    return Array.isArray(state.sites) ? state.sites : [];
+  }
 
-        // 1) 링크(a) 클릭은 원래 동작 유지
-        if (e.target.closest("a")) return;
+  function updateAutocomplete(query) {
+    clearAutocomplete();
+    if (!query) return;
 
-        // 2) 공유 버튼은 shareBtn에서 자체 처리
-        if (e.target.closest(".share-btn")) return;
-
-        // 3) 상세 버튼(detail-btn)일 때만 상세로 이동
-        const isDetailBtn = !!e.target.closest(".detail-btn");
-        const shouldGoDetail = isDetailBtn;
-        if (!shouldGoDetail) return;
-
-        const key = card.dataset.key || card.dataset.id;
-        if (!key) return;
-
-        const nextHash = `#site=${encodeURIComponent(key)}`;
-        if (location.hash !== nextHash) location.hash = nextHash;
-        else window.__route?.parseRoute?.();
-      };
-
-      const onContainerKeydown = (e) => {
-        if (e.key !== "Enter" && e.key !== " ") return;
-
-        const card = e.target.closest(".link-card");
-        if (!card) return;
-
-        if (e.target.closest("a") || e.target.closest("button")) return;
-
-        e.preventDefault();
-        const key = card.dataset.key || card.dataset.id;
-        if (!key) return;
-
-        const nextHash = `#site=${encodeURIComponent(key)}`;
-        if (location.hash !== nextHash) location.hash = nextHash;
-        else window.__route?.parseRoute?.();
-      };
-
+    let matches = [];
+    const activeFuse = window.fuse;
+    if (activeFuse) {
       try {
-        const safeManager = window.memoryManager?.eventManager;
-        if (safeManager) {
-          safeManager.add(cardsContainer, "click", onContainerClick);
-          safeManager.add(cardsContainer, "keydown", onContainerKeydown);
-        } else {
-          cardsContainer.addEventListener("click", onContainerClick);
-          cardsContainer.addEventListener("keydown", onContainerKeydown);
-        }
-      } catch {
-        cardsContainer.addEventListener("click", onContainerClick);
-        cardsContainer.addEventListener("keydown", onContainerKeydown);
+        matches = activeFuse.search(query).map((result) => result.item);
+      } catch (error) {
+        console.warn("Fuse search failed:", error);
       }
-
-      cardsContainer.__delegationBound = true;
     }
 
-    let isComposing = false;
-
-    if (!searchInput || !autocompleteList) {
-      throw new Error("필수 검색 요소를 찾을 수 없습니다");
-    }
-
-    let currentFocus = -1;
-
-    const debouncedSearch = debounce((value) => {
-      try {
-        setFilters({ currentSearchQuery: value });
-      } catch (error) {
-        console.error("검색 처리 오류:", error);
-      }
-    }, 300);
-
-    manager.add(searchInput, "input", function () {
-      if (isComposing) return;
-      const query = this.value.trim();
-      autocompleteList.innerHTML = "";
-      currentFocus = -1;
-
-      debouncedSearch(query);
-
-      if (!query) return;
-
-      try {
-        let matches = [];
-
-        const activeFuse = window.fuse;
-        if (activeFuse) {
-          matches = activeFuse.search(query).map((r) => r.item);
-        }
-
-        const jamoRegex = /[\u3131-\u318E]/;
-        if (jamoRegex.test(query)) {
-          const jamoQuery = query.toLowerCase();
-          const jamoMatches = state.sites.filter((s) =>
-            (s.chosungFull || "").toLowerCase().includes(jamoQuery)
-          );
-          const map = {};
-          matches.concat(jamoMatches).forEach((m) => {
-            if (m && m.name) map[m.name] = m;
-          });
-          matches = Object.values(map);
-        }
-
-        matches.slice(0, 8).forEach((site) => {
-          if (!site || !site.name) return;
-
-          const item = document.createElement("div");
-          item.className = "autocomplete-item";
-
-          const siteName =
-            typeof highlight === "function"
-              ? highlight(site.name, query)
-              : escape(site.name);
-
-          const siteDesc =
-            typeof highlight === "function"
-              ? highlight(site.desc || "", query)
-              : escape(site.desc || "");
-
-          item.innerHTML = `
-            <strong>${siteName}</strong><br>
-            <span class="autocomplete-desc">${siteDesc}</span>
-          `;
-
-          manager.add(item, "click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            searchInput.value = site.name;
-            autocompleteList.innerHTML = "";
-            currentFocus = -1;
-            setFilters({ currentSearchQuery: site.name });
-          });
-
-          autocompleteList.appendChild(item);
-        });
-      } catch (error) {
-        console.error("자동완성 처리 오류:", error);
-      }
-    });
-
-    manager.add(searchInput, "keydown", function (e) {
-      const items = autocompleteList.querySelectorAll(
-        ".autocomplete-item, .item, .ac-item, .suggestion"
+    if (/[\u3131-\u318E]/.test(query)) {
+      const jamoQuery = query.toLowerCase();
+      const jamoMatches = getSites().filter((site) =>
+        String(site?.chosungFull || "").toLowerCase().includes(jamoQuery)
       );
-      const hasItems = items && items.length > 0;
+      const deduped = new Map(matches.map((site) => [site?.name, site]));
+      jamoMatches.forEach((site) => {
+        if (site?.name) deduped.set(site.name, site);
+      });
+      matches = Array.from(deduped.values());
+    }
 
-      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && hasItems) {
+    matches.slice(0, 8).forEach((site) => {
+      if (!site?.name) return;
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "autocomplete-item";
+      item.setAttribute("data-value", site.name);
+
+      const nameHtml = typeof highlight === "function" ? highlight(site.name, query) : escape(site.name);
+      const descHtml = typeof highlight === "function" ? highlight(site.desc || "", query) : escape(site.desc || "");
+      item.innerHTML = `<strong>${nameHtml}</strong><br><span class="autocomplete-desc">${descHtml}</span>`;
+
+      add(item, "click", (e) => {
         e.preventDefault();
-        if (e.key === "ArrowDown") {
-          currentFocus =
-            (typeof currentFocus === "number" ? currentFocus : -1) + 1;
-        } else {
-          currentFocus =
-            (typeof currentFocus === "number" ? currentFocus : items.length) -
-            1;
-        }
-        currentFocus = (currentFocus + items.length) % items.length;
-
-        removeActive(items);
-        items[currentFocus].classList.add("active");
-        items[currentFocus].scrollIntoView({
-          block: "nearest",
-          inline: "nearest",
-          behavior: "smooth",
-        });
-
-        const val = getAutocompleteTitle(items[currentFocus]);
-        this.value = val;
-        if (typeof debouncedSearch === "function") debouncedSearch(val);
-      } else if (e.key === "Enter") {
-        if (hasItems && currentFocus > -1 && items[currentFocus]) {
-          e.preventDefault();
-          const val = getAutocompleteTitle(items[currentFocus]);
-          this.value = val;
-          if (typeof debouncedSearch === "function") debouncedSearch(val);
-          autocompleteList.innerHTML = "";
-          currentFocus = -1;
-        }
-      } else if (e.key === "Escape") {
-        autocompleteList.innerHTML = "";
-        currentFocus = -1;
-        this.blur();
-      }
-    });
-
-    function getAutocompleteTitle(el) {
-      if (!el) return "";
-      const byData = el.getAttribute("data-value") || el.getAttribute("data-title");
-      if (byData) return byData.trim();
-
-      const titleEl =
-        el.querySelector('[data-role="title"]') ||
-        el.querySelector(".title") ||
-        el.querySelector(".item-title") ||
-        el.querySelector(".name") ||
-        el.firstElementChild;
-
-      if (titleEl) return titleEl.textContent.trim();
-
-      const clone = el.cloneNode(true);
-      clone
-        .querySelectorAll(".desc, .description, .meta, .subtitle, .extra, small")
-        .forEach((n) => n.remove());
-      return clone.textContent.trim();
-    }
-
-    function removeActive(items) {
-      for (let i = 0; i < items.length; i++) {
-        items[i].classList.remove("active");
-      }
-    }
-
-    manager.add(document, "click", function (e) {
-      if (e.target !== searchInput && !autocompleteList.contains(e.target)) {
-        autocompleteList.innerHTML = "";
-        currentFocus = -1;
-      }
-    });
-
-    document.querySelectorAll("#ageFilter .filter-btn").forEach((btn) => {
-      manager.add(btn, "click", (e) => {
-        document.querySelectorAll("#ageFilter .filter-btn").forEach((b) => {
-          b.classList.remove("active");
-        });
-        e.currentTarget.classList.add("active");
-        setFilters({ currentAgeFilter: e.currentTarget.dataset.age });
-        updateSelectedFiltersSummary();
+        e.stopPropagation();
+        searchInput.value = site.name;
+        clearAutocomplete();
+        setFilters?.({ currentSearchQuery: site.name });
       });
+
+      autocompleteList.appendChild(item);
     });
-
-    const subjectFilter = document.getElementById("subjectFilter");
-    if (subjectFilter) {
-      manager.add(subjectFilter, "change", (e) => {
-        setFilters({ currentSubjectFilter: e.target.value });
-        updateSelectedFiltersSummary();
-      });
-    }
-
-    document.querySelectorAll("#govFilter .filter-btn").forEach((btn) => {
-      manager.add(btn, "click", (e) => {
-        document.querySelectorAll("#govFilter .filter-btn").forEach((b) => {
-          b.classList.remove("active");
-        });
-        e.currentTarget.classList.add("active");
-        setFilters({ currentGovFilter: e.currentTarget.dataset.gov });
-        updateSelectedFiltersSummary();
-      });
-    });
-
-    const darkToggle = document.getElementById("darkToggle");
-    if (darkToggle) {
-      manager.add(darkToggle, "click", () => {
-        const willDark = !document.body.classList.contains("dark");
-        window.applyTheme?.(willDark ? "dark" : "light");
-      });
-    }
-
-    const resetBtn = document.getElementById("resetBtn");
-    const viewAllBtn = document.getElementById("viewAllBtn");
-
-    if (resetBtn) {
-      manager.add(resetBtn, "click", resetFilters);
-    }
-    if (viewAllBtn) {
-      manager.add(viewAllBtn, "click", resetFilters);
-    }
-
-    const itemsPerPage = document.getElementById("itemsPerPage");
-    if (itemsPerPage) {
-      manager.add(itemsPerPage, "change", (e) => {
-        setState(
-          { ITEMS_PER_PAGE: parseInt(e.target.value, 10) },
-          { resetPages: true, render: true }
-        );
-      });
-    }
-
-    manager.add(document, "keydown", (e) => {
-      if (e.ctrlKey && e.key === "k") {
-        e.preventDefault();
-        searchInput.focus();
-        searchInput.select();
-      }
-    });
-
-    setupEventListeners.__initialized = true;
-    updateSelectedFiltersSummary();
-    console.log("✅ 메모리 안전 이벤트 리스너 설정 완료");
-  } catch (error) {
-    console.error("❌ 이벤트 리스너 설정 실패:", error);
-    throw error;
   }
+
+  function getAutocompleteValue(el) {
+    if (!el) return "";
+    const byData = el.getAttribute("data-value");
+    if (byData) return byData.trim();
+    return el.textContent.trim();
+  }
+
+  function removeActive(items) {
+    items.forEach((item) => item.classList.remove("active"));
+  }
+
+  if (mainPanel) {
+    add(mainPanel, "click", (e) => {
+      const detailBtn = e.target.closest(".detail-btn");
+      if (detailBtn) {
+        const card = detailBtn.closest(".link-card");
+        const key = card?.dataset.key || card?.dataset.id;
+        if (!key) return;
+        const nextHash = `#site=${encodeURIComponent(key)}`;
+        if (location.hash !== nextHash) location.hash = nextHash;
+        else window.App?.router?.parseRoute?.() || window.__route?.parseRoute?.();
+        return;
+      }
+
+      const shareBtn = e.target.closest(".share-btn");
+      if (shareBtn) {
+        e.preventDefault();
+        const card = shareBtn.closest(".link-card");
+        const key = card?.dataset.key || card?.dataset.id;
+        if (!key) return;
+        const siteIndex = window.buildSiteIndex?.();
+        const site = siteIndex?.get?.(key) || siteIndex?.get?.(String(key).toLowerCase());
+        if (site) shareSite(site.name || "", site.url || "");
+      }
+    });
+  }
+
+  add(searchInput, "compositionstart", () => {
+    debouncedSearch.cancel?.();
+    isComposing = true;
+  });
+
+  add(searchInput, "compositionend", function () {
+    isComposing = false;
+    setTimeout(() => {
+      commitSearch(this.value, { immediate: true, force: true });
+    }, 0);
+  });
+
+  add(searchInput, "input", function (event) {
+    if (isComposing || event.isComposing) {
+      commitSearch(this.value, { immediate: true });
+      return;
+    }
+    commitSearch(this.value);
+  });
+
+  add(searchInput, "keydown", function (e) {
+    const items = Array.from(autocompleteList.querySelectorAll(".autocomplete-item"));
+    if (!items.length) return;
+
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      currentFocus = e.key === "ArrowDown"
+        ? (currentFocus + 1) % items.length
+        : (currentFocus - 1 + items.length) % items.length;
+
+      removeActive(items);
+      items[currentFocus]?.classList.add("active");
+      items[currentFocus]?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+      return;
+    }
+
+    if (e.key === "Enter" && currentFocus >= 0) {
+      e.preventDefault();
+      const value = getAutocompleteValue(items[currentFocus]);
+      this.value = value;
+      clearAutocomplete();
+      setFilters?.({ currentSearchQuery: value });
+      return;
+    }
+
+    if (e.key === "Escape") {
+      clearAutocomplete();
+      this.blur();
+    }
+  });
+
+  add(document, "click", (e) => {
+    const tipAction = e.target.closest("[data-tip-action]");
+    if (tipAction) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.ddakpilmo?.tips?.handleAction?.(tipAction);
+      return;
+    }
+
+    if (e.target !== searchInput && !autocompleteList.contains(e.target)) {
+      clearAutocomplete();
+    }
+  });
+
+  document.querySelectorAll("#ageFilter .filter-btn").forEach((btn) => {
+    add(btn, "click", (e) => {
+      document.querySelectorAll("#ageFilter .filter-btn").forEach((node) => node.classList.remove("active"));
+      e.currentTarget.classList.add("active");
+      setFilters?.({ currentAgeFilter: e.currentTarget.dataset.age });
+      updateSelectedFiltersSummary();
+    });
+  });
+
+  add(document.getElementById("subjectFilter"), "change", (e) => {
+    setFilters?.({ currentSubjectFilter: e.target.value });
+    updateSelectedFiltersSummary();
+  });
+
+  document.querySelectorAll("#govFilter .filter-btn").forEach((btn) => {
+    add(btn, "click", (e) => {
+      document.querySelectorAll("#govFilter .filter-btn").forEach((node) => node.classList.remove("active"));
+      e.currentTarget.classList.add("active");
+      setFilters?.({ currentGovFilter: e.currentTarget.dataset.gov });
+      updateSelectedFiltersSummary();
+    });
+  });
+
+  add(document.getElementById("darkToggle"), "click", () => {
+    const willDark = !document.body.classList.contains("dark");
+    window.applyTheme?.(willDark ? "dark" : "light");
+  });
+
+  add(document.getElementById("resetBtn"), "click", resetFilters);
+  add(document.getElementById("viewAllBtn"), "click", resetFilters);
+
+  add(document.getElementById("itemsPerPage"), "change", (e) => {
+    setState?.({ ITEMS_PER_PAGE: parseInt(e.target.value, 10) }, { resetPages: true, render: true });
+  });
+
+  add(document, "keydown", (e) => {
+    if (e.ctrlKey && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    }
+  });
+
+  setupEventListeners.__initialized = true;
+  updateSelectedFiltersSummary();
+  console.log("[init] setupEventListeners completed");
 }
 
 function resetFilters() {
-  setState(
+  const setState = window.App?.store?.setState || window.setState;
+  setState?.(
     {
       currentAgeFilter: "all",
       currentCategoryFilter: "all",
       currentSubjectFilter: "all",
       currentGovFilter: "all",
       currentSearchQuery: "",
-      expandedCategories: {},
     },
     { resetPages: true, render: true }
   );
@@ -412,59 +340,58 @@ function resetFilters() {
   const searchInput = document.getElementById("searchInput");
   if (searchInput) searchInput.value = "";
 
-  document
-    .querySelectorAll("#ageFilter .filter-btn")
-    .forEach((b) => b.classList.remove("active"));
-  const ageAll = document.querySelector("#ageFilter .filter-btn[data-age='all']");
-  if (ageAll) ageAll.classList.add("active");
+  document.querySelectorAll("#ageFilter .filter-btn").forEach((btn) => btn.classList.remove("active"));
+  document.querySelector("#ageFilter .filter-btn[data-age='all']")?.classList.add("active");
 
   const subjectFilter = document.getElementById("subjectFilter");
   if (subjectFilter) subjectFilter.value = "all";
 
-  document
-    .querySelectorAll("#filterTabs .tab-btn")
-    .forEach((b) => b.classList.remove("active"));
-  const allTab = document.querySelector("#filterTabs .tab-btn[data-cat='all']");
-  if (allTab) allTab.classList.add("active");
+  document.querySelectorAll("#govFilter .filter-btn").forEach((btn) => btn.classList.remove("active"));
+  document.querySelector("#govFilter .filter-btn[data-gov='all']")?.classList.add("active");
 
-  if (typeof updateCategoryPagingMode === "function") updateCategoryPagingMode();
+  document.querySelectorAll("#filterTabs .tab-btn").forEach((btn) => btn.classList.remove("active"));
+  document.querySelector("#filterTabs .tab-btn[data-cat='all']")?.classList.add("active");
 
-  document
-    .querySelectorAll(".category-section.expanded-category")
-    .forEach((sec) => sec.classList.remove("expanded-category"));
-
+  window.updateCategoryPagingMode?.();
+  document.querySelectorAll(".category-section.expanded-category").forEach((sec) => sec.classList.remove("expanded-category"));
   document.querySelectorAll("[id$='-pagination']").forEach((pager) => {
     pager.removeAttribute("style");
     pager._btnCache = {};
     pager.classList.add("pagination");
   });
+
   updateSelectedFiltersSummary();
-  showToast("모든 필터가 초기화되었습니다");
+  window.showToast?.("모든 필터가 초기화되었습니다");
 }
 
-// ==================== 공유 기능 ====================
 function shareSite(siteName, url) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(() => {
-      showToast("링크가 복사되었습니다");
-    });
-  } else {
-    const ta = document.createElement("textarea");
-    ta.value = url;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-    showToast("링크가 복사되었습니다");
+  const text = String(url || "").trim();
+  if (!text) {
+    window.showToast?.("공유할 주소가 없습니다", "error");
+    return;
   }
 
-  document
-    .querySelectorAll(".category-section.expanded-category")
-    .forEach((sec) => sec.classList.remove("expanded-category"));
-  document.querySelectorAll(".pagination").forEach((p) => {
-    p.style.display = "";
-    p._btnCache = {};
-  });
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      window.showToast?.("링크가 복사되었습니다!");
+    }).catch(() => {
+      window.showToast?.("링크 복사에 실패했습니다.", "error");
+    });
+    return;
+  }
+
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    window.showToast?.("링크가 복사되었습니다!");
+  } catch {
+    window.showToast?.("링크 복사에 실패했습니다.", "error");
+  } finally {
+    document.body.removeChild(ta);
+  }
 }
 
 window.setupEventListeners = setupEventListeners;

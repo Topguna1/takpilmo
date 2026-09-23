@@ -1,0 +1,28 @@
+{
+  "name": "takpilmo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "serve -l 4173 .",
+    "lint": "eslint .",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-ddakpilmo \"node --test tests/firestore.rules.mjs\"",
+    "test": "npm run test:unit && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.52.0",
+    "eslint": "^9.24.0",
+    "firebase": "^12.19.0",
+    "firebase-tools": "^15.30.2",
+    "globals": "^15.15.0",
+    "jsdom": "^26.0.0",
+    "serve": "^14.2.4",
+    "vitest": "^3.1.1"
+  },
+  "dependencies": {
+    "fuse.js": "^7.3.0"
+  }
+}

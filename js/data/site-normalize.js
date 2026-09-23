@@ -1,5 +1,9 @@
 // Site normalization and ID helpers extracted from main.js
 (function () {
+  function getState() {
+    return window.App?.store?.getState?.() || window.state || {};
+  }
+
   function makeSiteId(site, index) {
     if (site?.id) return site.id;
     const base = String(site?.name || "")
@@ -11,8 +15,9 @@
   }
 
   function ensureSiteIds() {
-    const list = Array.isArray(window.state?.sites)
-      ? window.state.sites
+    const state = getState();
+    const list = Array.isArray(state.sites)
+      ? state.sites
       : Array.isArray(window.initialSites)
         ? window.initialSites
         : [];
@@ -72,7 +77,7 @@
         try {
           const host = new URL(url).hostname || "";
           isGovAuto = /(^|\.)gov\.kr$/i.test(host) || /(^|\.)[a-z0-9-]+\.go\.kr$/i.test(host);
-        } catch (_e) {
+        } catch {
           isGovAuto = /(\.go\.kr|gov\.kr)(\/|$)/i.test(url);
         }
 

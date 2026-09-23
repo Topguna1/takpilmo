@@ -1,11 +1,10 @@
-// ==================== 설정 패널 초기화 (단일 버전) ====================
+// Settings panel state management.
 function setupSettingsPanel() {
   if (setupSettingsPanel.__initialized) {
     return;
   }
 
   const manager = window.memoryManager?.eventManager;
-
   const fab = document.getElementById("settingsFab");
   const panel = document.getElementById("settingsPanel");
   const closeBtn = document.getElementById("settingsCloseBtn");
@@ -19,17 +18,32 @@ function setupSettingsPanel() {
     else el.addEventListener(evt, fn, opt);
   };
 
-  // ✅ 단일 Source of Truth
-  if (!window.state) window.state = {};
-  if (!window.state.settings) {
-    window.state.settings = { theme: "dark", font: "normal", anim: "on", radius: "round" };
-  }
+  const store = window.App?.store;
+  const DEFAULT_SETTINGS = {
+    theme: "dark",
+    font: "normal",
+    anim: "on",
+    radius: "round",
+  };
 
-  // ✅ 저장값 로드: (구버전 키 + siteSettings 둘 다 호환)
+  const getSettings = () => ({
+    ...DEFAULT_SETTINGS,
+    ...((store?.getState?.().settings) || window.state?.settings || {}),
+  });
+
+  const setSettings = (nextSettings) => {
+    if (store?.setState) {
+      store.setState({ settings: nextSettings }, { render: false });
+    } else {
+      window.state = window.state || {};
+      window.state.settings = { ...DEFAULT_SETTINGS, ...nextSettings };
+    }
+  };
+
   function loadSettings() {
-    const base = { theme: "dark", font: "normal", anim: "on", radius: "round" };
+    const base = { ...DEFAULT_SETTINGS };
+
     try {
-      // 1) 묶음 저장(siteSettings) 우선
       const raw = localStorage.getItem("siteSettings");
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -38,53 +52,45 @@ function setupSettingsPanel() {
     } catch {}
 
     try {
-      // 2) 구 키들(FOUC 선적용 스크립트가 쓰는 키)도 반영
-      const t = localStorage.getItem("siteTheme");
-      const f = localStorage.getItem("siteFontSize");
-      const a = localStorage.getItem("siteAnim");
-      const r = localStorage.getItem("siteRadius");
-      if (t) base.theme = t;
-      if (f) base.font = f;
-      if (a) base.anim = a;
-      if (r) base.radius = r;
+      const theme = localStorage.getItem("siteTheme");
+      const font = localStorage.getItem("siteFontSize");
+      const anim = localStorage.getItem("siteAnim");
+      const radius = localStorage.getItem("siteRadius");
+      if (theme) base.theme = theme;
+      if (font) base.font = font;
+      if (anim) base.anim = anim;
+      if (radius) base.radius = radius;
     } catch {}
 
-    // radius 값 안전화 (sharp 같은 값 들어와도 square로 교정)
     if (base.radius === "sharp") base.radius = "square";
-
-    window.state.settings = { ...window.state.settings, ...base };
+    setSettings(base);
   }
 
-  // ✅ 실제 적용
   function applyAll() {
-    const s = window.state.settings;
+    const settings = getSettings();
 
-    // FOUC 선적용 스크립트 호환용 저장
     try {
-      localStorage.setItem("siteTheme", s.theme);
-      localStorage.setItem("siteFontSize", s.font);
-      localStorage.setItem("siteAnim", s.anim);
-      localStorage.setItem("siteRadius", s.radius);
-      localStorage.setItem("siteSettings", JSON.stringify(s));
+      localStorage.setItem("siteTheme", settings.theme);
+      localStorage.setItem("siteFontSize", settings.font);
+      localStorage.setItem("siteAnim", settings.anim);
+      localStorage.setItem("siteRadius", settings.radius);
+      localStorage.setItem("siteSettings", JSON.stringify(settings));
     } catch {}
 
-    // 기존 apply 함수가 있으면 그걸 우선 사용(테마/클래스 처리 일원화)
-    window.applyTheme?.(s.theme);
-    window.applyFontSize?.(s.font);
-    window.applyAnimation?.(s.anim);
-    window.applyRadius?.(s.radius);
+    window.applyTheme?.(settings.theme);
+    window.applyFontSize?.(settings.font);
+    window.applyAnimation?.(settings.anim);
+    window.applyRadius?.(settings.radius);
   }
 
-  // ✅ 버튼 활성화 표시: CSS가 기대하는 클래스는 settings-active
   function syncUI() {
-    const s = window.state.settings;
+    const settings = getSettings();
     panel.querySelectorAll("[data-setting][data-value]").forEach((btn) => {
       const key = btn.dataset.setting;
       const val = btn.dataset.value;
-      const on = String(s?.[key]) === String(val);
-
-      btn.classList.toggle("settings-active", on); // ✅ 핵심
-      btn.classList.toggle("active", on);          // 혹시 다른 CSS가 active를 쓸 수도 있으니 같이 유지(안전)
+      const active = String(settings?.[key]) === String(val);
+      btn.classList.toggle("settings-active", active);
+      btn.classList.toggle("active", active);
     });
   }
 
@@ -93,60 +99,53 @@ function setupSettingsPanel() {
     document.body.classList.add("settings-open");
     panel.setAttribute("aria-hidden", "false");
   }
+
   function closePanel() {
     panel.classList.remove("open");
     document.body.classList.remove("settings-open");
     panel.setAttribute("aria-hidden", "true");
   }
 
-  // 열기/닫기
   add(fab, "click", openPanel);
   add(closeBtn, "click", closePanel);
 
-  // 바깥 클릭 닫기
   add(document, "click", (e) => {
     if (!panel.classList.contains("open")) return;
-    const t = e.target;
-    if (t === panel || panel.contains(t) || t === fab || fab.contains(t)) return;
+    const target = e.target;
+    if (target === panel || panel.contains(target) || target === fab || fab.contains(target)) return;
     closePanel();
   });
 
-  // ESC 닫기
   add(document, "keydown", (e) => {
     if (e.key === "Escape") closePanel();
   });
 
-  // ✅ (핵심) 클릭 리스너는 “이거 1개만”
   add(panel, "click", (e) => {
     const btn = e.target.closest("[data-setting][data-value]");
     if (!btn) return;
 
     const key = btn.dataset.setting;
-    let val = btn.dataset.value;
+    let value = btn.dataset.value;
+    if (key === "radius" && value === "sharp") value = "square";
 
-    // radius 보정
-    if (key === "radius" && val === "sharp") val = "square";
-
-    window.state.settings[key] = val;
-
+    setSettings({
+      ...getSettings(),
+      [key]: value,
+    });
     applyAll();
     syncUI();
   });
 
-  // 기본값으로 초기화
   add(resetBtn, "click", () => {
-    window.state.settings = { theme: "dark", font: "normal", anim: "on", radius: "round" };
+    setSettings({ ...DEFAULT_SETTINGS });
     applyAll();
     syncUI();
   });
 
-  // 초기 동기화
   loadSettings();
   applyAll();
   syncUI();
   setupSettingsPanel.__initialized = true;
 }
 
-// ✅ 전역 노출
 window.setupSettingsPanel = setupSettingsPanel;
-
