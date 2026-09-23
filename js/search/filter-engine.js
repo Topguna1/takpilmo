@@ -1,5 +1,8 @@
 // Search/filter engine extracted from main.js
 (function () {
+  window.App = window.App || {};
+  window.App.search = window.App.search || {};
+
   const CHO = [
     "\u3131", "\u3132", "\u3134", "\u3137", "\u3138", "\u3139", "\u3141",
     "\u3142", "\u3143", "\u3145", "\u3146", "\u3147", "\u3148", "\u3149",
@@ -16,6 +19,10 @@
     "\u3140", "\u3141", "\u3142", "\u3144", "\u3145", "\u3146", "\u3147",
     "\u3148", "\u314a", "\u314b", "\u314c", "\u314d", "\u314e"
   ];
+
+  function getState() {
+    return window.App?.store?.getState?.() || window.state || {};
+  }
 
   function normalizeTextForSearch(str) {
     return String(str ?? "")
@@ -85,8 +92,19 @@
     return window.subjectNames || {};
   }
 
-  function getFilteredSites() {
-    const state = window.state || {};
+  function buildFilterCacheKey(state = getState()) {
+    return JSON.stringify({
+      q: state.currentSearchQuery || "",
+      age: state.currentAgeFilter || "all",
+      category: state.currentCategoryFilter || "all",
+      subject: state.currentSubjectFilter || "all",
+      gov: state.currentGovFilter || "all",
+      sitesLength: Array.isArray(state.sites) ? state.sites.length : 0,
+    });
+  }
+
+  function getFilteredSites(inputState = getState()) {
+    const state = inputState || {};
     const sites = Array.isArray(state.sites) ? state.sites : [];
     const rawQ = state.currentSearchQuery || "";
     const q = rawQ.trim().toLowerCase();
@@ -146,9 +164,9 @@
   }
 
   function getFilteredSitesWithCache() {
-    const state = window.state || {};
+    const state = getState();
     const cacheManager = window.memoryManager?.cacheManager;
-    const cacheKey = `filtered_${state.currentSearchQuery}_${state.currentAgeFilter}_${state.currentCategoryFilter}_${state.currentSubjectFilter}_${state.currentGovFilter}`;
+    const cacheKey = `filtered_${buildFilterCacheKey(state)}`;
 
     if (cacheManager) {
       const cached = cacheManager.get(cacheKey);
@@ -165,7 +183,8 @@
       window.fuse = null;
       return null;
     }
-    const sites = Array.isArray(window.state?.sites) ? window.state.sites : [];
+    const state = getState();
+    const sites = Array.isArray(state.sites) ? state.sites : [];
     window.fuse = new window.Fuse(sites, {
       keys: ["name", "desc", "subjects", "category"],
       threshold: 0.4,
@@ -183,4 +202,8 @@
   window.getFilteredSites = getFilteredSites;
   window.getFilteredSitesWithCache = getFilteredSitesWithCache;
   window.initFuse = initFuse;
+  window.App.search.getFilteredSites = getFilteredSites;
+  window.App.search.getFilteredSitesWithCache = getFilteredSitesWithCache;
+  window.App.search.buildFilterCacheKey = buildFilterCacheKey;
+  window.App.search.initFuse = initFuse;
 })();

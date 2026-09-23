@@ -1,14 +1,93 @@
 {
-  "learning": {"name": "온라인강의", "icon": "💻"},
-  "info": {"name": "참고자료", "icon": "🔍"},
-  "highschool": {"name": "고입/고교학점제", "icon": "📓"},
-  "career": {"name": "진로/대학", "icon": "🎓"},
-  "exam": {"name": "시험/기출", "icon": "📝"},
-  "gpt": {"name": "GPT 활용", "icon": "🤖"},
-  "ppt": {"name": "PPT/프레젠테이션", "icon": "📊"},
-  "coding": {"name": "코딩/IT", "icon": "💻"},
-  "productivity": {"name": "생산성/도구", "icon": "🛠️"},
-  "reading": {"name": "독서/문해력", "icon": "📖"},
-  "art": {"name": "창의/예술", "icon": "🎨"},
-  "explore": {"name": "체험/탐구", "icon": "🔬"}
+  "learning": {
+    "name": "온라인강의",
+    "icon": "💻",
+    "description": "",
+    "sortOrder": 1,
+    "enabled": true
+  },
+  "info": {
+    "name": "참고자료",
+    "icon": "🔍",
+    "description": "",
+    "sortOrder": 2,
+    "enabled": true
+  },
+  "highschool": {
+    "name": "고입/고교학점제",
+    "icon": "📓",
+    "description": "",
+    "sortOrder": 3,
+    "enabled": true
+  },
+  "career": {
+    "name": "진로/대학",
+    "icon": "🎓",
+    "description": "",
+    "sortOrder": 4,
+    "enabled": true
+  },
+  "schoolexam": {
+    "name": "내신 대비",
+    "icon": "😵",
+    "description": "",
+    "sortOrder": 5,
+    "enabled": true
+  },
+  "exam": {
+    "name": "시험/기출",
+    "icon": "📝",
+    "description": "",
+    "sortOrder": 6,
+    "enabled": true
+  },
+  "ai": {
+    "name": "AI 활용",
+    "icon": "🤖",
+    "description": "",
+    "sortOrder": 7,
+    "enabled": true
+  },
+  "ppt": {
+    "name": "PPT/프레젠테이션",
+    "icon": "📊",
+    "description": "",
+    "sortOrder": 8,
+    "enabled": true
+  },
+  "coding": {
+    "name": "코딩/IT",
+    "icon": "💻",
+    "description": "",
+    "sortOrder": 9,
+    "enabled": true
+  },
+  "productivity": {
+    "name": "생산성/도구",
+    "icon": "🛠️",
+    "description": "",
+    "sortOrder": 10,
+    "enabled": true
+  },
+  "reading": {
+    "name": "독서/문해력",
+    "icon": "📖",
+    "description": "",
+    "sortOrder": 11,
+    "enabled": true
+  },
+  "art": {
+    "name": "창의/예술",
+    "icon": "🎨",
+    "description": "",
+    "sortOrder": 12,
+    "enabled": true
+  },
+  "explore": {
+    "name": "체험/탐구",
+    "icon": "🔬",
+    "description": "",
+    "sortOrder": 13,
+    "enabled": true
+  }
 }

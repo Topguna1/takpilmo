@@ -1,227 +1,245 @@
 // js/render.js
 (function () {
-  const RAF = window.requestAnimationFrame || function (cb){ return setTimeout(cb,16); };
+  const RAF = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
+  const CAF = window.cancelAnimationFrame || clearTimeout;
 
-  // 렌더링 상태 관리 객체
   const renderState = {
     scheduled: false,
+    rafId: 0,
     after: [],
     prevKeysByCategory: Object.create(null),
     prevCountByCategory: Object.create(null),
-    prevStats: { total: -1, filtered: -1, perPage: -1, totalPages: -1 }
+    prevStats: { total: -1, filtered: -1, perPage: -1, totalPages: -1 },
   };
 
-  function siteKeyOf(site) { return site?.url || site?.name || ''; }
-  
-  // 배열 비교 헬퍼
+  window.App = window.App || {};
+
+  function getState() {
+    return window.App?.store?.getState?.() || window.state || {};
+  }
+
+  function siteKeyOf(site) {
+    return site?.key || site?.id || site?.url || site?.name || "";
+  }
+
   function shallowEqualArray(a, b) {
     if (a === b) return true;
     if (!a || !b || a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
     return true;
   }
 
-  // 핵심: 렌더링 실행 함수
-  function renderSitesOptimizedCore() {
-    try {
-      // 1. main.js에서 공유해준 함수로 '현재 보여줄 사이트 목록' 가져오기
-      // (만약 함수가 없으면 빈 배열 처리해서 에러 방지)
-      const getFiltered = window.getFilteredSites || window.getFilteredSitesWithCache;
-      const filtered = (typeof getFiltered === "function") ? getFiltered() : [];
+  function computeFilteredData(state) {
+    const getFiltered = window.App?.search?.getFilteredSites || window.getFilteredSites || window.getFilteredSitesWithCache;
+    const filtered = typeof getFiltered === "function" ? getFiltered(state) : [];
+    const allCats = typeof window.getAllCategories === "function" ? window.getAllCategories() : {};
+    const categories = Object.keys(allCats).length
+      ? Object.keys(allCats)
+      : Array.from(new Set(filtered.map((site) => site?.category).filter(Boolean)));
+    const categoryMap = new Map(categories.map((category) => [category, []]));
 
-      const getAllCats = window.getAllCategories;
-      const allCats = (typeof getAllCats === "function") ? getAllCats() : {};
-      const categories = Object.keys(allCats).length > 0
-        ? Object.keys(allCats)
-        : Array.from(new Set(filtered.map((s) => s?.category).filter(Boolean)));
-
-      const categoryMap = new Map();
-      for (const category of categories) {
+    filtered.forEach((site) => {
+      const category = site?.category;
+      if (!category) return;
+      if (!categoryMap.has(category)) {
         categoryMap.set(category, []);
       }
-      for (const site of filtered) {
-        const key = site?.category;
-        if (!key) continue;
-        if (!categoryMap.has(key)) categoryMap.set(key, []);
-        categoryMap.get(key).push(site);
+      categoryMap.get(category).push(site);
+    });
+
+    return { filtered, allCats, categories, categoryMap };
+  }
+
+  function updateLayout(filtered, state) {
+    const container = document.getElementById("categoriesContainer");
+    if (!container) return;
+
+    const query = String(state.currentSearchQuery || "").trim();
+    const isAll = state.currentCategoryFilter === "all";
+    container.classList.remove("results-cols-1", "results-cols-2");
+
+    if (!query || !isAll) return;
+
+    const categoryCount = new Set(filtered.map((site) => site?.category).filter(Boolean)).size;
+    if (categoryCount === 1) container.classList.add("results-cols-1");
+    else if (categoryCount === 2) container.classList.add("results-cols-2");
+  }
+
+  function getPageSlice(list, category, state) {
+    if (state.currentCategoryFilter !== "all" && state.currentCategoryFilter === category) {
+      return list;
+    }
+
+    const currentPage = state.currentPageByCategory?.[category] || 1;
+    const perPage = state.ITEMS_PER_PAGE || 5;
+    const start = (currentPage - 1) * perPage;
+    return list.slice(start, start + perPage);
+  }
+
+  function updateSections(renderData, state) {
+    const { filtered, categories, categoryMap } = renderData;
+
+    categories.forEach((category) => {
+      const section = document.getElementById(`${category}-section`);
+      const content = document.getElementById(`${category}-content`);
+      const countEl = document.getElementById(`${category}-count`);
+      const pager = document.getElementById(`${category}-pagination`);
+      if (!section || !content) return;
+
+      const list = categoryMap.get(category) || [];
+      const totalCount = list.length;
+
+      if (countEl && renderState.prevCountByCategory[category] !== totalCount) {
+        countEl.textContent = String(totalCount);
+        renderState.prevCountByCategory[category] = totalCount;
       }
 
-      const hasResults = filtered.length > 0;
-
-      // ============================================================
-      // [버그 수정] 검색 시 결과 카테고리가 적으면 카드 크기 키우기 (3열 -> 2열)
-      // ============================================================
-      try {
-        const container = document.getElementById("categoriesContainer");
-        if (container) {
-          const q = (window.state?.currentSearchQuery || window.state?.searchQuery || "").trim();
-          const curCat = (window.state?.currentCategoryFilter ?? "all");
-
-          // 초기화
-          container.classList.remove("results-cols-1", "results-cols-2");
-
-          // 전체 보기 + 검색어 있을 때만
-          if (q && (curCat === "all" || curCat === "전체")) {
-            const resultCats = new Set();
-            for (const s of filtered) if (s?.category) resultCats.add(s.category);
-
-            if (resultCats.size === 1) container.classList.add("results-cols-1");
-            else if (resultCats.size === 2) container.classList.add("results-cols-2");
-          }
-        }
-      } catch (e) {
-        console.warn("Layout resize logic failed:", e);
+      if (totalCount === 0) {
+        section.style.display = "none";
+        renderState.prevKeysByCategory[category] = [];
+        if (pager) pager.replaceChildren();
+        return;
       }
 
-      // ============================================================
+      section.style.display = "block";
+      const slice = getPageSlice(list, category, state);
+      const visibleKeys = slice.map(siteKeyOf);
+      const prevKeys = renderState.prevKeysByCategory[category] || [];
+      const selectedOnly = state.currentCategoryFilter !== "all" && state.currentCategoryFilter === category;
 
-      // 3. 각 카테고리 섹션 그리기
-      for (const category of categories) {
-        const section = document.getElementById(`${category}-section`);
-        const content = document.getElementById(`${category}-content`);
-        const countEl = document.getElementById(`${category}-count`);
-        
-        if (!section || !content) continue;
-
-        const list = categoryMap.get(category) || [];
-        const totalCount = list.length;
-
-        // 숫자 뱃지 업데이트
-        if (countEl && renderState.prevCountByCategory[category] !== totalCount) {
-          countEl.textContent = totalCount;
-          renderState.prevCountByCategory[category] = totalCount;
-        }
-
-        // 결과 없으면 섹션 숨김
-        if (totalCount === 0) {
-          section.style.display = "none";
-          renderState.prevKeysByCategory[category] = [];
-          // 페이지네이션도 숨김
-          const pager = document.getElementById(`${category}-pagination`);
-          if (pager) pager.innerHTML = "";
-          continue;
-        }
-
-        section.style.display = "block";
-
-        // 페이징 처리 로직
-        const cur = window.state?.currentCategoryFilter ?? 'all';
-        const isAllView = (cur === 'all' || cur === '전체');
-        const isSelectedCategory = (!isAllView && cur === category);
-
-        let slice;
-        if (isSelectedCategory) {
-          // 단일 카테고리 선택 시: 전체 출력
-          slice = list; 
-        } else {
-          // 전체 보기 모드: 페이징 적용 (ITEMS_PER_PAGE 사용)
-          const currentPage = (window.state?.currentPageByCategory?.[category]) || 1;
-          const perPage = window.state?.ITEMS_PER_PAGE || 20;
-          const start = (currentPage - 1) * perPage;
-          slice = list.slice(start, start + perPage);
-        }
-
-        const visibleKeys = slice.map(siteKeyOf);
-        const prevKeys = renderState.prevKeysByCategory[category] || [];
-
-        // 페이지네이션 버튼 그리기 (main.js에 있는 renderPagination 호출)
-        const pager = document.getElementById(`${category}-pagination`);
-        if (pager) {
-          if (isSelectedCategory) {
-            pager.innerHTML = "";
-            pager.style.display = 'none';
-          } else {
-            pager.style.display = '';
-            if (typeof window.renderPagination === 'function') {
-                window.renderPagination(category, totalCount);
-            }
-          }
-        }
-
-        // 내용이 바뀌었을 때만 카드 다시 그리기 (DOM 조작 최소화)
-        if (!shallowEqualArray(prevKeys, visibleKeys)) {
-          // buildCardsFragment 함수가 있으면 사용 (없으면 for문 등 사용 필요)
-          if (typeof window.buildCardsFragment === 'function') {
-             const frag = window.buildCardsFragment(slice);
-             content.replaceChildren(frag);
-          } else {
-             // 비상용 (buildCardsFragment가 없을 때)
-             content.innerHTML = ""; 
-             // createSiteCard가 전역에 있다면 사용
-             if (typeof window.createSiteCard === 'function') {
-                 slice.forEach(site => content.appendChild(window.createSiteCard(site)));
-             }
-          }
-          renderState.prevKeysByCategory[category] = visibleKeys;
+      if (pager) {
+        pager.style.display = selectedOnly ? "none" : "";
+        if (selectedOnly) {
+          pager.replaceChildren();
+        } else if (typeof window.renderPagination === "function") {
+          window.renderPagination(category, totalCount);
         }
       }
 
-      // 4. '결과 없음' 메시지 처리
-      const noResults = document.getElementById("noResults");
-      if (noResults) noResults.style.display = hasResults ? "none" : "block";
+      if (!shallowEqualArray(prevKeys, visibleKeys)) {
+        const fragment = typeof window.buildCardsFragment === "function"
+          ? window.buildCardsFragment(slice)
+          : document.createDocumentFragment();
 
-      // 5. 하단 통계 바 업데이트
-      const total = window.state?.sites?.length ?? 0;
-      const filteredLen = filtered.length;
-      const perPage = window.state?.ITEMS_PER_PAGE || 20;
-      const totalPages = Math.ceil(filteredLen / perPage) || 1;
-
-      // 값이 변했을 때만 DOM 업데이트
-      if (
-        renderState.prevStats.total !== total ||
-        renderState.prevStats.filtered !== filteredLen ||
-        renderState.prevStats.totalPages !== totalPages
-      ) {
-        const totalCountEl = document.getElementById("totalCount");
-        const filteredCountEl = document.getElementById("filteredCount");
-        const paginationInfo = document.getElementById("paginationInfo");
-
-        if (totalCountEl) totalCountEl.textContent = total;
-        if (filteredCountEl) filteredCountEl.textContent = filteredLen;
-        if (paginationInfo) paginationInfo.textContent = `📄 ${perPage}개씩 보기 · 1/${totalPages} 페이지`;
-        
-        renderState.prevStats = { total, filtered: filteredLen, perPage, totalPages };
-      }
-
-      // 6. 검색어 하이라이트 (ddakHighlight 라이브러리 연동)
-      try {
-        const q = (window.state?.currentSearchQuery || '').trim();
-        const scope = document.getElementById('categoriesContainer');
-        if (window.ddakHighlight && scope) {
-           if (q) window.ddakHighlight.apply(q, scope);
-           else if (window.ddakHighlight.clear) window.ddakHighlight.clear(scope);
+        if (!fragment.childNodes.length && typeof window.createSiteCard === "function") {
+          slice.forEach((site) => fragment.appendChild(window.createSiteCard(site)));
         }
-      } catch (e) {}
 
-      // 7. 후처리 작업 실행 (UI 트랜지션 종료 등)
-      if (renderState.after.length) {
-        const jobs = renderState.after.splice(0);
-        jobs.forEach(job => { try { job(); } catch(e){} });
+        content.replaceChildren(fragment);
+        renderState.prevKeysByCategory[category] = visibleKeys;
       }
 
-    } catch (err) {
-      console.error('renderSitesOptimizedCore Critical Error:', err);
-    } finally {
-      renderState.scheduled = false;
+    });
+
+    const noResults = document.getElementById("noResults");
+    if (noResults) {
+      noResults.style.display = filtered.length ? "none" : "block";
     }
   }
 
-  // 요청 예약 함수
-  function requestRenderSites() {
+  function updateStats(filteredLength, state) {
+    const total = Array.isArray(state.sites) ? state.sites.length : 0;
+    const perPage = state.ITEMS_PER_PAGE || 5;
+    const totalPages = Math.max(1, Math.ceil(filteredLength / perPage) || 1);
+
+    if (
+      renderState.prevStats.total === total &&
+      renderState.prevStats.filtered === filteredLength &&
+      renderState.prevStats.perPage === perPage &&
+      renderState.prevStats.totalPages === totalPages
+    ) {
+      return;
+    }
+
+    const totalCountEl = document.getElementById("totalCount");
+    const filteredCountEl = document.getElementById("filteredCount");
+    const paginationInfo = document.getElementById("paginationInfo");
+    const footerSitesEl = document.getElementById("footerTotalSites");
+    const footerCatsEl = document.getElementById("footerTotalCategories");
+
+    if (totalCountEl) totalCountEl.textContent = String(total);
+    if (filteredCountEl) filteredCountEl.textContent = String(filteredLength);
+    if (paginationInfo) paginationInfo.textContent = `📄 ${perPage}개씩 보기 · 1/${totalPages} 페이지`;
+    if (footerSitesEl) footerSitesEl.textContent = String(total);
+    if (footerCatsEl) {
+      const categories = typeof window.getAllCategories === "function" ? window.getAllCategories() : {};
+      const categoryCount = Object.keys(categories).length || new Set((state.sites || []).map((site) => site?.category).filter(Boolean)).size;
+      footerCatsEl.textContent = String(categoryCount);
+    }
+
+    renderState.prevStats = { total, filtered: filteredLength, perPage, totalPages };
+  }
+
+  function applyHighlights(state) {
+    const query = String(state.currentSearchQuery || "").trim();
+    const scope = document.getElementById("categoriesContainer");
+    if (!scope || !window.ddakHighlight) return;
+
+    if (query) window.ddakHighlight.apply(query, scope);
+    else if (typeof window.ddakHighlight.clear === "function") window.ddakHighlight.clear(scope);
+  }
+
+  function flushAfterJobs() {
+    const jobs = renderState.after.splice(0);
+    jobs.forEach(({ callback, resolve }) => {
+      try {
+        if (typeof callback === "function") callback();
+      } catch (error) {
+        console.error("afterNextRender callback error:", error);
+      } finally {
+        resolve?.();
+      }
+    });
+  }
+
+  function renderSitesOptimizedCore() {
+    const state = getState();
+    try {
+      const renderData = computeFilteredData(state);
+      updateLayout(renderData.filtered, state);
+      updateSections(renderData, state);
+      updateStats(renderData.filtered.length, state);
+      applyHighlights(state);
+    } catch (error) {
+      console.error("renderSitesOptimizedCore error:", error);
+    } finally {
+      renderState.scheduled = false;
+      renderState.rafId = 0;
+      flushAfterJobs();
+    }
+  }
+
+  function requestRender() {
     if (renderState.scheduled) return;
     renderState.scheduled = true;
-    RAF(renderSitesOptimizedCore);
+    if (renderState.rafId) CAF(renderState.rafId);
+    renderState.rafId = RAF(renderSitesOptimizedCore);
   }
 
-  // 렌더링 후 실행할 콜백 등록 (깜빡임 방지 트랜지션 종료용)
-  function afterNextRender(fn) {
-    if (typeof fn !== "function") return;
-    renderState.after.push(fn);
-    requestRenderSites();
+  function afterNextRender(callback) {
+    return new Promise((resolve) => {
+      renderState.after.push({
+        callback: typeof callback === "function" ? callback : null,
+        resolve,
+      });
+      requestRender();
+    });
   }
-  
-  // 전역 노출
+
+  window.App.render = {
+    requestRender,
+    afterNextRender,
+    renderNow: renderSitesOptimizedCore,
+  };
+
+  if (typeof window.App?.store?.subscribe === "function") {
+    window.App.store.subscribe(() => {
+      requestRender();
+    });
+  }
+
   window.afterNextRender = afterNextRender;
-  window.renderSites = requestRenderSites; // 외부에서는 이걸 호출
-
+  window.renderSites = requestRender;
 })();
