@@ -28,14 +28,16 @@ export function normalizeCatalog(payload) {
   });
   if (!sites.length) throw new Error('No enabled sheet sites');
   const rawDetails = payload.details?.bySiteKey || payload.details || {};
-  const detailRows = Array.isArray(rawDetails) ? rawDetails.map(row=>[text(row.siteKey||row.key),row]) : Object.entries(rawDetails);
-  const details = Object.fromEntries(detailRows.filter(([key,row])=>key&&row&&typeof row==='object'&&enabled(row)));
+  const detailRows = Array.isArray(rawDetails) ? rawDetails.filter(row=>row && typeof row==='object').map(row=>[text(row.siteKey||row.key),row]) : Object.entries(rawDetails);
+  const allowed = ['detailDesc','summary','recommendedFor','fee','signup','signupAge','operatorName','operatorType','sourceUrl','verifiedAt','updatedAt'];
+  const arrays = ['useCases','features','mainUses','notes'];
+  const details = Object.fromEntries(detailRows.filter(([key,row])=>key&&enabled(row)).map(([key,row])=>[key,Object.fromEntries([...allowed.filter(k=>typeof row[k]==='string').map(k=>[k,row[k]]),...arrays.filter(k=>typeof row[k]==='string'||Array.isArray(row[k])).map(k=>[k,Array.isArray(row[k])?row[k].filter(v=>typeof v==='string'):row[k]])])]));
   const disabledDetailKeys = detailRows.filter(([,row])=>!enabled(row)).map(([key])=>key);
-  return {categories,sites,details,disabledDetailKeys,warnings,tips:payload.tips,generatedAt:text(payload.generatedAt)};
+  return {categories,sites,details,disabledDetailKeys,warnings,generatedAt:text(payload.generatedAt)};
 }
 
 export function reuseIntroductions(catalog, legacy) {
-  const saved = legacy?.details?.bySiteKey || {};
+  const saved = legacy || {};
   for (const site of catalog.sites) {
     const current = catalog.details[site.key];
     const previous = Object.hasOwn(saved, site.key) ? saved[site.key] : null;
@@ -72,7 +74,7 @@ export async function loadSheetCatalog() {
   const missingIntroductions = catalog.sites.some(site=>!text(catalog.details[site.key]?.detailDesc) && !catalog.disabledDetailKeys.includes(site.key));
   if (missingIntroductions) {
     try {
-      const legacy=await fetchJSON('data/content.example.json');
+      const legacy=await fetchJSON('data/site-introductions.json',3000);
       reuseIntroductions(catalog, legacy);
     }
     catch { /* Catalog browsing remains available if optional introductions fail. */ }
@@ -82,7 +84,6 @@ export async function loadSheetCatalog() {
   window.initialSites=catalog.sites;
   window.siteDetailMap=catalog.details;
   window.sheetGeneratedAt=catalog.generatedAt;
-  console.log(`Catalog loaded: source=${window.siteDataSource}, sites=${catalog.sites.length}`);
   return catalog;
 }
 

@@ -1,5 +1,6 @@
+import { installSearchEngine } from '../js/search/filter-engine.module.js';
 import { describe, expect, it } from "vitest";
-import { loadBrowserScript, resetBrowserEnv } from "./helpers/browser-env.js";
+import { resetBrowserEnv } from "./helpers/browser-env.js";
 
 describe("filter engine", () => {
   it("filters by category and search text", () => {
@@ -44,7 +45,7 @@ describe("filter engine", () => {
     window.subjectNames = { math: "수학", career: "진로" };
     window.getCategoryName = (key) => key;
 
-    loadBrowserScript("js/search/filter-engine.js");
+    installSearchEngine();
 
     expect(window.getFilteredSites().map((site) => site.name)).toEqual(["Alpha Academy"]);
   });
@@ -81,7 +82,7 @@ describe("filter engine", () => {
     window.subjectNames = { math: "수학" };
     window.getCategoryName = (key) => key;
 
-    loadBrowserScript("js/search/filter-engine.js");
+    installSearchEngine();
 
     expect(window.getFilteredSites()).toHaveLength(1);
   });
@@ -103,7 +104,7 @@ describe("filter engine", () => {
         getState: () => state,
       },
     };
-    loadBrowserScript("js/search/filter-engine.js");
+    installSearchEngine();
 
     const first = window.App.search.buildFilterCacheKey(state);
     const second = window.App.search.buildFilterCacheKey({

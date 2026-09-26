@@ -1,17 +1,18 @@
+import { installStore } from '../js/app/store.module.js';
 import { describe, expect, it } from "vitest";
-import { loadBrowserScript, resetBrowserEnv } from "./helpers/browser-env.js";
+import { resetBrowserEnv } from "./helpers/browser-env.js";
 
 describe("store", () => {
   it("defaults to 5 items per page", () => {
     resetBrowserEnv();
-    loadBrowserScript("js/app/store.js");
+    installStore();
 
     expect(window.App.store.getState().ITEMS_PER_PAGE).toBe(5);
   });
 
   it("updates state immutably and mirrors window.state", () => {
     resetBrowserEnv();
-    loadBrowserScript("js/app/store.js");
+    installStore();
 
     const store = window.App.store;
     const previous = store.getState();
@@ -24,7 +25,7 @@ describe("store", () => {
 
   it("resets pagination when filters change", () => {
     const env = resetBrowserEnv();
-    loadBrowserScript("js/app/store.js");
+    installStore();
 
     const store = window.App.store;
     store.setState(
@@ -43,7 +44,7 @@ describe("store", () => {
 
   it("coalesces subscriber notifications into one frame", () => {
     const env = resetBrowserEnv();
-    loadBrowserScript("js/app/store.js");
+    installStore();
 
     const store = window.App.store;
     const calls = [];

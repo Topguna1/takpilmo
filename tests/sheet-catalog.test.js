@@ -21,7 +21,7 @@ describe('Topguna1.github.io sheet catalog integration',()=>{
     vi.stubGlobal('fetch',fetchMock);await loadSheetCatalog();await loadSheetCatalog();
     expect(window.siteDataSource).toBe('google-sheets');expect(window.initialSites.some(s=>s.key==='fresh2')).toBe(true);
     expect(fetchMock.mock.calls.filter(([url])=>url===SHEET_API_URL)).toHaveLength(2);
-    expect(fetchMock.mock.calls.some(([url])=>['data/sites.json','data/categories.json','data/sheet-snapshot.json'].includes(url))).toBe(false);
+    expect(fetchMock.mock.calls.some(([url])=>['data/sheet-snapshot.json'].includes(url))).toBe(false);
     expect(fetchMock.mock.calls[0][1].cache).toBe('no-store');
   });
   for(const value of [{items:{}},{error:'permission error'},null])it('falls back explicitly for invalid or unavailable sheet responses '+JSON.stringify(value),async()=>{
@@ -44,7 +44,7 @@ it('keeps valid live rows and reports invalid rows without editing the source', 
 
 it('reuses old introductions only for current sites without overwriting current facts or disabled details', () => {
   const catalog={sites:[{key:'old'},{key:'live'},{key:'hidden'},{key:'disabled-old'}],details:{old:{detailDesc:'  ',fee:'현재 요금'},live:{detailDesc:'최신 소개'}},disabledDetailKeys:['hidden']};
-  const legacy={details:{bySiteKey:{old:{detailDesc:'기존 소개\n  둘째 줄',fee:'옛 요금',verifiedAt:'2020-01-01'},live:{detailDesc:'이전 소개'},hidden:{detailDesc:'숨긴 소개'},'disabled-old':{detailDesc:'사용 안 함',enabled:false},removed:{detailDesc:'삭제된 사이트'}}}};
+  const legacy={old:{detailDesc:'기존 소개\n  둘째 줄',fee:'옛 요금',verifiedAt:'2020-01-01'},live:{detailDesc:'이전 소개'},hidden:{detailDesc:'숨긴 소개'},'disabled-old':{detailDesc:'사용 안 함',enabled:false},removed:{detailDesc:'삭제된 사이트'}};
   reuseIntroductions(catalog,legacy);
   expect(catalog.details.old).toEqual({detailDesc:'기존 소개\n  둘째 줄',fee:'현재 요금'});
   expect(catalog.details.live.detailDesc).toBe('최신 소개');
@@ -55,11 +55,11 @@ it('reuses old introductions only for current sites without overwriting current 
 
 it('loads saved introductions even when the live catalog already has tips', async () => {
   const live={...snapshot,details:[],tips:{}};
-  const legacy=JSON.parse(readFileSync('data/content.example.json','utf8'));
-  live.tips=legacy.tips;
+  const legacy=JSON.parse(readFileSync('data/site-introductions.json','utf8'));
+  live.tips={unused:true};
   vi.stubGlobal('fetch',vi.fn(async url=>({ok:true,json:async()=>url===SHEET_API_URL?live:legacy})));
   await loadSheetCatalog();
   expect(window.siteDataSource).toBe('google-sheets');
-  expect(window.siteDetailMap.EBS.detailDesc).toBe(legacy.details.bySiteKey.EBS.detailDesc);
+  expect(window.siteDetailMap.EBS.detailDesc).toBe(legacy.EBS.detailDesc);
   expect(window.initialSites).toHaveLength(snapshot.sites.length);
 });

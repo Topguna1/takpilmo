@@ -45,3 +45,10 @@ test('admin can publish and unpublish while timestamps and validation are enforc
   await assertFails(updateDoc(ref,{siteKeys:['a','b','c','d'],updatedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(db,'admins','other'),{enabled:true}));
 });
+
+test('malformed nested fields cannot be saved even by admin',async()=>{
+const db=env.authenticatedContext('owner').firestore();
+for(const patch of [{siteKeys:[3]},{siteKeys:['RISS','RISS']},{sources:['bad']},{sources:[{label:'bad',url:'javascript:alert(1)',checkedAt:'2026-09-22'}]}])await assertFails(setDoc(doc(db,'infoArticles','malformed'),{...content('published'),...patch}));
+});
+
+test('maximum valid source and site counts remain writable',async()=>{const db=env.authenticatedContext('owner').firestore();const data=content('published');await assertSucceeds(setDoc(doc(db,'infoArticles','maximum'),{...data,siteKeys:['a','b','c'],sources:Array.from({length:10},()=>({...data.sources[0]}))}));});

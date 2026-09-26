@@ -8,6 +8,8 @@ async function mock(page, options = {}) {
     let items = SEED_ARTICLES.map(item => ({...item,status:'published'}));
     let signed = ${!!options.admin};
     let failSave = ${!!options.failSave};
+    export const revisionOf = value => value ? String(value.seconds) : null;
+    export const newArticleId = async () => 'new-article';
     export const connect = async () => ({auth:{currentUser:signed ? {uid:'test-uid'} : null}});
     export const administrator = async () => signed && ${!options.denied};
     export const login = async () => {signed = true;};
@@ -24,7 +26,7 @@ async function mock(page, options = {}) {
       const index = items.findIndex(item => item.id === id);
       if (createOnly && index >= 0) return id;
       if(index >= 0) items[index] = {...data,id}; else items.push({...data,id});
-      return id;
+      return {id,updatedAt:{seconds:1,nanoseconds:0}};
     }
   `}));
 }
@@ -79,7 +81,7 @@ test('information failure does not break catalog and missing config is recoverab
   await mock(page,{fail:true});await ready(page);await expect(page.locator('#infoSurface')).toContainText('불러오지 못했어요');
   await page.locator('[data-nav=sites]').click();await expect(page.locator('.site-card')).toHaveCount(12);
   await page.unroute('**/js/info/data.module.js');
-  await page.route('**/js/info/firebase-config.module.js', route=>route.fulfill({contentType:'application/javascript',body:'export const firebaseConfig = {};'}));
+  await page.route('**/js/info/firebase-client.module.js', route=>route.fulfill({contentType:'application/javascript',body:"export function client(){throw new Error('Firebase 연결 준비 중입니다.');}"}));
   await ready(page);await expect(page.locator('#infoSurface')).toContainText('Firebase 연결 준비');
 });
 test('Sheets failure leaves information readable',async ({page}) => {
@@ -97,3 +99,5 @@ for(const width of [320,390,768,1440]) test(`information layout ${width}`,async 
     if([390,1440].includes(width)) await page.screenshot({path:`test-results/screens/info-${width}-${hash.includes('admin')?'admin':hash.includes('average')?'article':'list'}.png`,fullPage:true});
   }
 });
+
+test('article back restores the loaded list card focus',async({page})=>{await mock(page);await ready(page);const card=page.locator('.info-card').nth(5);await card.scrollIntoViewIfNeeded();await card.focus();const y=await page.evaluate(()=>scrollY);await card.click();await expect(page.locator('.info-article')).toBeVisible();await page.goBack();await expect(card).toBeFocused();await expect.poll(()=>page.evaluate(()=>scrollY)).toBeCloseTo(y,0);});

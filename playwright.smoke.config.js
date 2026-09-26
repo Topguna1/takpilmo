@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/smoke',outputDir:'test-results/smoke',timeout:30000,workers:2,use:{baseURL:'http://127.0.0.1:4274/takpilmo/'},projects:['chromium','firefox','webkit'].map(browserName=>({name:browserName,use:{browserName}})),webServer:{command:'node scripts/preview.mjs',url:'http://127.0.0.1:4274/takpilmo/',reuseExistingServer:false}});
