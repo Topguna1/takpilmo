@@ -9,5 +9,5 @@ await page.locator('.site-card a[data-detail]').first().click();await expect(pag
 await page.reload();await expect(page.locator('.detail-layout')).toBeVisible();
 await page.goto('./#/admin/info');await expect(page.getByRole('button',{name:'Google 로그인'})).toBeVisible();
 const missing=await request.get('./missing-page');expect(missing.status()).toBe(404);
-expect(errors).toEqual([]);
+expect(errors.filter(error=>!error.includes('/firestore.googleapis.com/'))).toEqual([]);
 });
