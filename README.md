@@ -1,78 +1,49 @@
 # 딱필모
 
-파일을 수정하거나 정리하기 전에는 [파일 분류표](FILES.md)를 참고하세요. 현재 실행 파일, 핵심 데이터, 테스트용 기존 코드, 미사용 후보와 보관 파일을 구분했습니다.
+학생·학부모·교사를 위한 사이트 모음과 학습 정보 서비스입니다.
 
-**딱 필요한 사이트만 모았습니다.**
+운영 주소: https://topguna1.github.io/takpilmo/
 
-딱필모는 학생·학부모·교사를 위해  
-교육, 학습 자료, 진로, 도구 사이트를 **큐레이션 형태로 정리한 링크 모음 서비스**입니다.  
-검색과 필터를 통해 목적에 맞는 사이트를 빠르게 찾을 수 있도록 돕습니다.
+## 기능과 데이터
 
----
+- 검색·분류·필터·페이지 나누기로 사이트를 탐색하고 상세정보를 확인합니다.
+- 보관함과 최근 기록은 기존 브라우저 저장 키를 유지합니다. 저장소가 차단돼도 탐색할 수 있습니다.
+- 사이트 목록·상세정보는 Google Sheets를 우선 사용하고 연결 실패 시 시트 백업을 표시합니다.
+- 정보 글은 Firestore 서버에서 조회하며 관리자 Google 로그인으로 작성·수정·즉시 공개합니다.
+- 정보 목록은 `#/info`, 상세는 `#/info/글ID`, 관리는 `#/admin/info`입니다. 옛 guide/tips/practice 주소는 정보 목록으로 이동합니다.
 
-## 주요 기능
+운영 Sheets와 공유 Apps Script 응답은 그대로 유지합니다. 사이트는 옛 가이드 데이터를 읽지 않습니다. 과거 사이트 소개 중 필요한 43개만 별도 데이터로 보존했습니다.
 
-- 📂 카테고리 기반 사이트 탐색
-- 🔍 키워드 검색 및 필터링
-- 🏛️ 정부 운영 사이트 구분 표시
-- 📝 사이트별 간단한 설명 제공
-- 📝 학습 정보와 사이트 활용법을 담은 딱필 정보 8편
-- ✍️ Google 로그인 관리자 화면에서 정보 글 작성·수정·공개
-- 📊 Google Sheets 기반 데이터 관리
+## 개발
 
----
+Node 22 이상을 사용합니다.
 
-## 서비스 구성 방식
+```sh
+npm ci
+npm run serve
+```
 
-현재 UI는 홈 → 사이트 모음 또는 딱필 정보 → 사이트 상세정보 흐름입니다.
+http://localhost:4173 에서 확인합니다. 개발 서버는 시작할 때 빌드하므로 수정 후 재시작하세요. 소스 파일을 브라우저에서 직접 열면 npm Firebase 모듈을 해석할 수 없습니다.
 
-정보 목록은 `#/info`, 상세는 `#/info/글ID`, 관리자 화면은 `#/admin/info`입니다. 기존 `#/guide`, `#/tips`, `#/practice` 주소는 새 정보 목록으로 이동합니다.
+```sh
+npm run lint
+npm run test:unit
+npm run test:e2e
+npm run test:rules
+npm run build
+npm run test:smoke
+```
 
-새 정보 글은 Firestore에서 관리하며 사이트 목록은 Google Sheets를 유지합니다. 현재 GitHub Pages에서 운영하고 추후 Cloudflare Pages로 이전 가능한 정적 구조입니다. [Firebase 연결 및 운영 안내](docs/firebase-info-setup.md)를 참고하세요.
+규칙 검증은 Java 21 이상과 Firestore Emulator를 사용하며 운영 데이터를 수정하지 않습니다. 브라우저 설치는 `npx playwright install chromium firefox webkit`입니다. E2E는 Chromium, 빌드 결과물 핵심 흐름은 세 브라우저로 확인합니다.
 
-딱필모는 **외부 사이트의 콘텐츠를 수집하거나 저장하지 않습니다.**
+## 배포
 
-- 사이트 목록, 카테고리, 상세 설명: Google Sheets 연동
-- 연결 실패 시: `Topguna1.github.io`에서 가져온 시트 백업 사용
-- 실제 콘텐츠: 각 외부 사이트로 이동
+esbuild가 `dist/`에 실행 파일·필수 데이터·자산·라이선스만 생성합니다. 고정 Firebase SDK를 자체 배포하고 인증 코드는 관리자 화면에서 로드합니다. GitHub Pages의 소스는 GitHub Actions로 설정하고 CI가 검사한 결과물을 배포합니다. Cloudflare 연결은 이번 범위에서 제외합니다.
 
-👉 정보 제공 목적의 **링크 큐레이션 서비스**입니다.
+[파일 분류](FILES.md) · [Firebase 운영](docs/firebase-info-setup.md) · [안정화 결과·장애 대응](docs/production-hardening.md)
 
----
+해시 기반 개별 글은 독립 SEO·SNS 미리보기를 제공하지 않습니다. 홈페이지 메타정보와 canonical을 사용하며 해시 주소를 sitemap에 나열하지 않습니다.
 
-## 데이터 관리
+## 라이선스
 
-- 사이트 목록, 카테고리, 상세 설명: Google Sheets 전체 API 응답
-- 매 새로고침에 최신 시트 요청, 복수 카테고리와 빈 `enabled` 지원
-- 장애 백업: `data/sheet-snapshot.json` (`Topguna1.github.io`의 수정본)
-- 딱필 정보: Firebase Firestore (Google 로그인 관리자만 편집)
-
-기존 가이드 시트 데이터는 사용하지 않습니다. 초기 정보 글 8편은 관리자 화면에서 초안으로 등록합니다.
-
-이 구조를 통해  
-데이터 수정은 빠르게, 서비스 로딩은 가볍게 유지합니다.
-
----
-
-## License
-
-- **Source Code**: MIT License
-- **Site data & curated content**:  
-  Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
-
-외부 사이트의 저작권 및 상표권은 각 운영 주체에 있습니다.
-
----
-
-## Disclaimer
-
-본 서비스는 개인 프로젝트로 운영됩니다.  
-각 사이트의 서비스 내용, 정책, 운영 여부에 대한 책임은  
-해당 사이트의 운영 주체에 있습니다.
-
-
-## 로컬 실행과 품질 점검
-
-`npm install` 후 `npm run serve`로 실행합니다. 검증 명령은 `npm run lint`, `npm run test:unit`, `npm run test:e2e`입니다. 별도 빌드 단계가 없는 정적 사이트입니다.
-
-[2026-09-13 사용성·품질 점검 결과](docs/quality-audit-2026-09-13.md)에 재현한 문제, 적용 사항, 검증 범위와 남은 과제를 정리했습니다.
+코드는 MIT, 사이트 데이터·큐레이션 콘텐츠는 CC BY-NC 4.0입니다. 외부 사이트의 콘텐츠·상표와 서비스 정책은 각 운영 주체에 귀속됩니다.

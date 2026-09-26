@@ -57,6 +57,7 @@ function snapshot() {
   if (!currentHash) return;
   const active = document.activeElement;
   snapshots.set(currentHash, { hash: currentHash, y: scrollY, focus: active?.id || "", href: active?.getAttribute("href") || "", text: active?.textContent || "", save: active?.dataset?.save || "" });
+  if (snapshots.size > 50) snapshots.delete(snapshots.keys().next().value);
 }
 function navigate(hash, replace = false) {
   snapshot();
@@ -151,7 +152,7 @@ function render({ preserve = false } = {}) {
   }
   document.title = `${title} — 필요한 사이트와 학습 정보`;
   main.setAttribute("aria-busy", String(catalogPage && loading));
-  void hydrateInformation();
+  const hydration = hydrateInformation();
   if (!loading && !loadFailed && window.sheetWarnings?.length) {
     main.insertAdjacentHTML('afterbegin', `<p class="data-source-notice" role="status">입력 정보 확인이 필요한 ${window.sheetWarnings.length}개 항목을 제외한 사이트를 표시하고 있어요.</p>`);
   }
@@ -165,7 +166,9 @@ function render({ preserve = false } = {}) {
   if (changed && !preserve) {
     const target = restoreNext;
     restoreNext = null;
-    routeFocus(target);
+    const focusHash=location.hash;
+    if(focusHash.startsWith('#/info'))void hydration.then(()=>{if(location.hash===focusHash)routeFocus(target);});
+    else routeFocus(target);
   }
   if (retained) {
     const input = document.getElementById(retained.id);
@@ -228,15 +231,6 @@ function panelOpen(kind) {
   if (kind === "settings") {
     panel.innerHTML = settingsContent();
     document.getElementById("settingsOpen").setAttribute("aria-expanded", "true");
-    panel.showModal();
-    return;
-  }
-  if (kind === "legacy") {
-    const source = main.querySelector(".tips-sidebar");
-    if (!source) return;
-    const clone = source.cloneNode(true);
-    clone.querySelector(".tips-sidebar-mobile-header")?.remove();
-    panel.innerHTML = `<div class="dialog-head"><h2 id="panelTitle">\uAD50\uACFC \uD0D0\uC0C9 \uBA54\uB274</h2><button data-close aria-label="\uB2EB\uAE30">\xD7</button></div><div class="legacy-menu">${clone.innerHTML}</div>`;
     panel.showModal();
     return;
   }
@@ -440,16 +434,6 @@ window.addEventListener("storage", () => {
   render({ preserve: true });
 });
 window.addEventListener("offline", () => notify("\uC778\uD130\uB137 \uC5F0\uACB0\uC774 \uB04A\uC5B4\uC84C\uC2B5\uB2C8\uB2E4. \uC678\uBD80 \uC0AC\uC774\uD2B8 \uBC29\uBB38\uC5D0\uB294 \uC5F0\uACB0\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."));
-main.addEventListener("click", (e) => {
-  if (e.target.closest("#tipsBackBtn")) {
-    e.stopImmediatePropagation();
-    navigate("#/sites");
-  }
-  if (e.target.closest("#tipsMobileNavTrigger")) {
-    e.stopImmediatePropagation();
-    panelOpen("legacy");
-  }
-}, true);
 async function loadOptional(path, fallback) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 3000);

@@ -4,6 +4,16 @@ service cloud.firestore {
     function admin() {
       return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
+    function validKey(keys, i) {
+      return keys.size() <= i || (keys[i] is string && keys[i].size() > 0 && keys[i].size() <= 200);
+    }
+    function validSource(source) {
+      // Missing fields or non-string values fail closed when calling matches().
+      return source.keys().hasOnly(['label','url','checkedAt'])
+        && source.label.matches('[\\s\\S]{1,300}')
+        && source.url.size() <= 2048 && source.url.matches('https?://[^/ ].*')
+        && source.checkedAt.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}');
+    }
     function valid() {
       let d = request.resource.data;
       return d.keys().hasOnly(['title','summary','body','category','siteKeys','sources','status','createdAt','updatedAt','publishedAt'])
@@ -13,8 +23,10 @@ service cloud.firestore {
         && d.body is string && d.body.size() > 0 && d.body.size() <= 50000
         && d.category in ['학습 정보','사이트 활용']
         && d.status in ['draft','published']
-        && d.siteKeys is list && d.siteKeys.size() <= 3
+        && d.siteKeys is list && d.siteKeys.size() <= 3 && d.siteKeys.toSet().size() == d.siteKeys.size()
+        && validKey(d.siteKeys,0) && validKey(d.siteKeys,1) && validKey(d.siteKeys,2)
         && d.sources is list && d.sources.size() <= 10
+        && (d.sources.size() <= 0 || validSource(d.sources[0])) && (d.sources.size() <= 1 || validSource(d.sources[1])) && (d.sources.size() <= 2 || validSource(d.sources[2])) && (d.sources.size() <= 3 || validSource(d.sources[3])) && (d.sources.size() <= 4 || validSource(d.sources[4])) && (d.sources.size() <= 5 || validSource(d.sources[5])) && (d.sources.size() <= 6 || validSource(d.sources[6])) && (d.sources.size() <= 7 || validSource(d.sources[7])) && (d.sources.size() <= 8 || validSource(d.sources[8])) && (d.sources.size() <= 9 || validSource(d.sources[9]))
         && (d.status == 'draft' || d.sources.size() > 0)
         && d.createdAt is timestamp && d.updatedAt == request.time
         && (d.publishedAt == null || d.publishedAt is timestamp)

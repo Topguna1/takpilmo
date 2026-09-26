@@ -9,3 +9,6 @@ coverage/
 /firebase-debug.log
 /firestore-debug.log
 /.firebase/
+
+/dist/
+/.dev/

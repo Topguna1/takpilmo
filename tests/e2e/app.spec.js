@@ -6,9 +6,7 @@ const sites=Array.from({length:25},(_,i)=>({key:`alpha-${i+1}`,name:`Alpha ${i+1
   {key:'GoogleScholar',name:'Google Scholar',url:'https://scholar.google.com',desc:'논문 검색',category:'info',ages:['high'],subjects:['general']}
 ]);
 test.beforeEach(async({page})=>{
-  await page.route('**/js/info/firebase-config.module.js', r=>r.fulfill({contentType:'application/javascript',body:'export const firebaseConfig = {};'}));
-  await page.route('**/data/categories.json',r=>r.fulfill({json:categories}));
-  await page.route('**/data/sites.json',r=>r.fulfill({json:sites}));
+  await page.route('**/js/info/firebase-client.module.js', r=>r.fulfill({contentType:'application/javascript',body:"export function client(){throw new Error('Firebase 연결 준비 중입니다.');}"}));
   await page.route('**/script.google.com/**',r=>r.fulfill({json:{categories,sites,details:{}}}));
   await page.route('**/data/sheet-snapshot.json',r=>r.fulfill({json:{categories,sites,details:{}}}));
   await page.route('https://www.google.com/s2/**',r=>r.abort());

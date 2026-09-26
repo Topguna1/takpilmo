@@ -11,7 +11,7 @@
 - `infoArticles`의 `status` 오름차순 + `publishedAt` 내림차순 복합 인덱스 생성이 완료됐다.
 - Google 로그인을 활성화하고 `topguna1.github.io`, `localhost`, `127.0.0.1`을 승인된 도메인에 등록했다.
 - 관리자 Google 로그인 및 해당 UID의 `admins` 문서 등록을 완료했다. 초기 글 8편이 모두 공개되어 있으며, 비로그인 브라우저에서 운영 Firestore의 공개 목록 조회를 확인했다.
-- GitHub Pages는 기존 `main` 브랜치의 정적 배포를 사용한다. 변경 사항은 PR의 CI 통과 후 반영하고 운영 주소에서 확인한다. Cloudflare Pages 이전은 추후 진행한다.
+- GitHub Pages는 CI의 dist 결과물을 GitHub Actions로 배포한다. 변경 사항은 PR의 CI 통과 후 반영하고 운영 주소에서 확인한다. Cloudflare Pages 이전은 추후 진행한다.
 
 내장 브라우저에서 Google 팝업이 열리지 않으면 일반 Chrome 또는 Edge로 `http://localhost:4173/#/admin/info`를 열어 로그인한다. GitHub Pages는 인증 도메인과 출처가 달라 리디렉션 로그인에도 브라우저 저장소 제한이 적용될 수 있으므로 현재는 팝업 방식을 사용한다. [Firebase 공식 안내](https://firebase.google.com/docs/auth/web/redirect-best-practices)를 참고한다.
 
@@ -26,12 +26,12 @@
 
 ## 2. 규칙과 인덱스 배포
 
-저장소 루트에서 실행한다. `YOUR_PROJECT_ID`는 기존 프로젝트 설정의 프로젝트 ID로 바꾼다.
+저장소 루트에서 실행한다. `takpilmo`는 기존 프로젝트 설정의 프로젝트 ID로 바꾼다.
 
 ```sh
-npm install
+npm ci
 npx firebase login
-npx firebase deploy --only firestore:rules,firestore:indexes --project YOUR_PROJECT_ID
+npx firebase deploy --only firestore:rules,firestore:indexes --project takpilmo
 ```
 
 이 명령은 웹사이트를 배포하지 않는다. 정보 글의 접근 규칙과 공개 목록 인덱스만 배포한다. 기존 프로젝트에 별도 Firestore 규칙이 있다면 현재 규칙과 병합한 후 배포한다. 이 저장소의 기본 규칙은 `admins`와 `infoArticles` 이외의 경로를 허용하지 않는다.
@@ -53,6 +53,7 @@ npx firebase deploy --only firestore:rules,firestore:indexes --project YOUR_PROJ
 - 출처는 줄마다 `이름 | https://주소 | YYYY-MM-DD`로 입력한다.
 - ‘공개 저장’은 즉시 반영한다. ‘초안 저장 / 비공개’는 공개 목록과 비로그인 상세 접근을 차단한다.
 - 최초 공개일을 유지하므로 수정만으로 목록 최상단으로 이동하지 않는다.
+- 홈·관련 글은 최대 3편만 서버에서 조회한다. 관련 글에는 status + siteKeys(array-contains) + publishedAt 복합 인덱스가 필요하다. 목록은 제목·요약 검색을 위해 전체 공개 글을 조회하며 화면은 12편씩 표시한다.
 - 저장 실패 시 입력을 유지한다. 저장되지 않은 상태로 나가면 이탈 확인을 표시한다.
 - 글 삭제·예약 발행·이미지 업로드·댓글 기능은 제공하지 않는다.
 
@@ -62,11 +63,11 @@ npx firebase deploy --only firestore:rules,firestore:indexes --project YOUR_PROJ
 
 ### 현재 GitHub Pages
 
-기존 배포 방식을 유지한다. 빌드 없이 저장소의 정적 파일을 제공한다. Firebase 설정·보안 규칙·로그인 확인 후 사이트 변경을 배포한다. 저장소 하위 경로에서도 상대 자산 경로와 해시 라우팅을 사용한다.
+Settings → Pages → Source를 GitHub Actions로 설정한다. CI에서 npm ci, 필수 검사, esbuild, 빌드 결과물 검사를 통과한 dist만 배포한다. Firebase 설정·보안 규칙·로그인 확인 후 사이트 변경을 배포한다. 저장소 하위 경로에서도 상대 자산 경로와 해시 라우팅을 사용한다.
 
 ### 추후 Cloudflare Pages
 
-Git 저장소 연결 시 프레임워크 없음, 빌드 명령 없음(필요하면 `exit 0`), 출력 디렉터리 `.`로 설정한다. Firebase Hosting, Workers, Pages Functions는 사용하지 않는다. Functions용 별도 설정을 추가할 필요가 없다.
+Git 저장소 연결 시 프레임워크 없음, 빌드 명령 `npm run build`, 출력 디렉터리 `dist`로 설정한다. Firebase Hosting, Workers, Pages Functions는 사용하지 않는다. Functions용 별도 설정을 추가할 필요가 없다.
 
 Firebase 프로젝트와 글 데이터는 그대로 유지한다. 고정 `pages.dev` 운영 주소 또는 연결할 도메인을 Firebase Authentication 승인된 도메인에 추가한다. 매 배포마다 달라지는 미리보기 주소 전체에 관리자 로그인을 개방하지 않는다.
 
@@ -84,3 +85,9 @@ npm run test:rules
 규칙 테스트는 Java 21 이상과 Node 22 이상을 사용한다. `demo-ddakpilmo` Emulator만 사용하며 운영 프로젝트에는 접속하지 않는다. CI에도 같은 검증을 포함한다. 브라우저 테스트는 정보 API를 가짜 데이터로 대체해 화면·저장 실패·접근 제한 UI를 확인하며, 실제 Firestore 접근 제어는 별도 Emulator 테스트가 검증한다.
 
 Firebase 설정이 비어 있으면 정보 영역에 연결 준비 안내가 표시된다. 기존 사이트 검색·보관함은 계속 사용할 수 있다. 운영 연결 완료 여부는 실제 프로젝트에서 관리자 로그인 및 글 공개를 확인한 뒤 판단한다.
+
+## 저장 충돌·장애 대응
+
+저장 전에 새 글 ID를 고정한다. 저장 후 확인에 실패하면 완료 안내와 목록 새로고침을 요구하므로 새 ID로 중복 생성하지 않는다. 다른 창에서 먼저 변경된 글은 덮어쓰지 않는다. 충돌·권한 변경 시 입력을 복사해 보관하고 목록을 다시 읽어 비교한다. 영구 편집 초안을 브라우저에 저장하지는 않으므로 창을 닫기 전 필요한 입력을 보관한다.
+
+이번 강화 규칙과 관련 글 인덱스는 저장소 파일을 운영 프로젝트에 별도로 배포해야 한다. 코드 CI가 운영 Firebase에 배포하지는 않는다.

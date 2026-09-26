@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { vi } from "vitest";
 
 export function resetBrowserEnv(bodyHtml = "") {
@@ -72,9 +70,4 @@ export function resetBrowserEnv(bodyHtml = "") {
       scrollY = value;
     },
   };
-}
-
-export function loadBrowserScript(relativePath) {
-  const source = readFileSync(resolve(process.cwd(), relativePath), "utf8");
-  window.eval(source);
 }

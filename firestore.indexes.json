@@ -1,11 +1,37 @@
 {
-  "indexes": [{
-    "collectionGroup": "infoArticles",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {"fieldPath": "status", "order": "ASCENDING"},
-      {"fieldPath": "publishedAt", "order": "DESCENDING"}
-    ]
-  }],
+  "indexes": [
+    {
+      "collectionGroup": "infoArticles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "publishedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "infoArticles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "siteKeys",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "publishedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }
