@@ -1,0 +1,15 @@
+{
+  "purpose": "Indigo palette and compact card/filter trial; pre-change originals",
+  "files": [
+    "index.html",
+    "js/hub/views.module.js",
+    "js/hub/app.module.js",
+    "tests/e2e/app.spec.js",
+    "tests/e2e/design.spec.js"
+  ],
+  "newFiles": [
+    "assets/palette-trial.css",
+    "js/hub/fee-label.module.js",
+    "tests/fee-label.test.js"
+  ]
+}

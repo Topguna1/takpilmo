@@ -210,7 +210,7 @@ describe("site data loader", () => {
     installSiteData();
     await window.loadJSONData();
 
-    expect(fetchMock).toHaveBeenCalledWith(window.CONTENT_API_URL, { cache: "no-store" });
+    expect(fetchMock).toHaveBeenCalledWith(window.CONTENT_API_URL, { cache: "no-store", signal: expect.any(AbortSignal) });
     expect(window.defaultCategories.cached).toBeUndefined();
     expect(window.defaultCategories.info.name).toBe("참고자료");
   });
@@ -293,7 +293,7 @@ describe("site data loader", () => {
     installSiteData();
     await window.loadJSONData();
 
-    expect(fetchMock).toHaveBeenCalledWith("https://example.com/content", { cache: "no-store" });
+    expect(fetchMock).toHaveBeenCalledWith("https://example.com/content", { cache: "no-store", signal: expect.any(AbortSignal) });
   });
 
   it("falls back to local snapshot when remote payload only contains legacy details", async () => {

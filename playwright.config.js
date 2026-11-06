@@ -8,7 +8,8 @@ export default defineConfig({
     headless: true,
   },
   webServer: {
-    command: "npx serve -l 4173 .",
+    command: "node node_modules/serve/build/main.js -l tcp://127.0.0.1:4173 .",
+    env: { NO_UPDATE_CHECK: "1" },
     url: "http://127.0.0.1:4173/index.html",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

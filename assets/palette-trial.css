@@ -1,0 +1,31 @@
+/* Reversible indigo trial. Remove this stylesheet link to restore the previous palette. */
+:root { --bg:#f6f5fb; --surface:#fff; --text:#2b2941; --muted:#69667e; --line:#dfddeb; --input:#918ba9; --accent:#6554c4; --tint:#ede9fa; --lift-shadow:0 18px 40px -22px #51428d66; }
+body.dark { --bg:#1a192d; --surface:#27263c; --text:#eeedf7; --muted:#b7b4cd; --line:#424058; --input:#77728f; --accent:#b5aaff; --tint:#363050; --lift-shadow:0 20px 40px -20px #080716bb; }
+body { background-image:radial-gradient(ellipse at 80% 0%,#8880d911,transparent 55%); }
+.site-header { background:var(--surface); }
+body.dark .site-header { background:#161523; }
+.discovery-visual { background:#e9e4f7; }.visual-grid { background-image:linear-gradient(#8a7baf18 1px,transparent 1px),linear-gradient(90deg,#8a7baf18 1px,transparent 1px); }
+body.dark .discovery-visual { background:#302b49; }
+.book-main { background:#6552a3; color:#f6f0ff; box-shadow:14px 22px 32px -10px #28203b66,inset 7px 0 #493b7a,inset 9px 0 #9b87cb66; }
+.book-shadow { background:#d3c8ec; border-color:#b7a4d5; }.book-title b { color:#eee1aa; }.book-main svg { stroke:#e4d4fa; }
+.visual-sticker { background:#e6d7f3; border-color:#baa0d0; color:#58416e; }
+.visual-note { box-shadow:0 12px 30px #352b551a; }
+.task-tone-0 { background:#ecebfa; border-color:#d8d5ee; }.task-tone-1 { background:#f2eaf7; border-color:#e4d7ee; }.task-tone-2 { background:#e9edf9; border-color:#d5dcef; }
+body.dark .task-tone-0 { background:#2d2c48; border-color:#454361; }body.dark .task-tone-1 { background:#352c48; border-color:#4f4062; }body.dark .task-tone-2 { background:#293147; border-color:#404c65; }
+.task-symbol { border-color:var(--line); }.task-card .task-card-link { border-top-color:var(--line); }
+body.dark .settings-trigger,body.dark .settings-options button[aria-pressed="true"] { color:#241c3a; }
+.site-card { font-size:1.04em; }.site-card .card-top h3 { font-size:1.17em; }.site-card .site-desc { font-size:.92em; }.site-card .card-use { font-size:.85em; }
+.site-card .card-category-line { font-size:.74em; }.site-card .card-domain { font-size:.74em; }.site-card .card-tags { margin-bottom:18px; }
+.site-card .tag { font-size:.75em; padding:4px 10px; border-radius:20px; background:#e9eefb; color:#48608a; border-color:#cdd7ee; }
+body.dark .site-card .tag { background:#293958; color:#bfd4ff; border-color:#435e8e; }
+.site-card .fee-tag { background:#eee6fa; color:#73549a; border-color:#d6c3eb; }
+body.dark .site-card .fee-tag { background:#45315d; color:#e2c9ff; border-color:#745499; }
+.site-card .card-source { font-size:.72em; margin-top:auto; padding-top:12px; }.site-card .card-actions { font-size:.85em; }
+.filter-row { flex-wrap:wrap; }.filter-row label { flex:0 1 165px; min-width:0; }.filter-row select { width:100%; min-width:0; }
+.filter-reset { white-space:nowrap; background:#ebe8f4; color:#514967; border-color:#d3cce4; }
+body.dark .filter-reset { background:#706c83; color:#fff; border-color:#827d98; }
+.filter-reset:hover { background:var(--tint); color:var(--accent); }
+@media(max-width:600px) { .filter-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }.filter-row .extra { margin-left:0; width:100%; }.filter-row label { width:auto; }.site-card { font-size:1.02em; } }
+
+@media(max-width:600px) { .filter-reset { white-space:normal; min-width:0; padding-inline:8px; } }
+@media(max-width:380px) { .filter-row { grid-template-columns:minmax(0,1fr); } }

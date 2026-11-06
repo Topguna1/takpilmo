@@ -1,0 +1,380 @@
+{
+  "generatedAt": "2026-10-30T16:05:04.026Z",
+  "rawRows": 167,
+  "uniqueSites": 162,
+  "categories": 14,
+  "invalidRows": [],
+  "coreSites": [
+    {
+      "key": "KOSIS",
+      "name": "국가통계포털(KOSIS)",
+      "url": "https://kosis.kr/",
+      "recommendedAges": [
+        "high",
+        "adult",
+        "mid"
+      ],
+      "fee": "공개 통계 조회 무료",
+      "signup": "공개 조회는 비회원 · 개인화 서비스는 ONE-ID 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://kosis.kr/oneid/cmmn/member/GoToItgrClauses.do",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "RISS",
+      "name": "RISS",
+      "url": "http://www.riss.kr/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "검색 무료 · 원문·문헌복사 등은 제공 조건에 따라 유료",
+      "signup": "개인화·신청 서비스는 RISS 회원 로그인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "공공기관 운영",
+      "sourceUrl": "https://m.riss.kr/search/detail/DetailView.do",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "DBpia",
+      "name": "DBpia",
+      "url": "https://www.dbpia.co.kr/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "원문은 기관인증·개인구독 등 이용권 조건 확인",
+      "signup": "기관인증 또는 개인 회원 이용 · 상품별 조건 상이",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "민간 운영",
+      "sourceUrl": "https://www.dbpia.co.kr/faq/faqView?fbId=13",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "GoogleScholar",
+      "name": "Google Scholar",
+      "url": "https://scholar.google.com/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "검색 무료 · 원문 제공처에 따라 무료·유료",
+      "signup": "공개 검색은 가입 없이 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "민간 운영",
+      "sourceUrl": "https://scholar.google.com/intl/uk/scholar/help.html",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "공공데이터포털",
+      "name": "공공데이터포털",
+      "url": "https://www.data.go.kr/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "데이터별 비용부과유무 확인 · 무료 데이터 제공",
+      "signup": "오픈API는 활용신청·인증키 등 데이터별 조건 확인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://www.data.go.kr/ugs/selectPortalInfoView.do",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "서울열린데이터광장",
+      "name": "서울열린데이터광장",
+      "url": "https://data.seoul.go.kr/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "데이터별 이용 조건 확인",
+      "signup": "오픈API 활용은 인증키 필요",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://data.seoul.go.kr/together/guide/useGuide.do",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "E나라지표",
+      "name": "E나라지표",
+      "url": "https://www.index.go.kr/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "공개 지표 조회 무료",
+      "signup": "공개 지표 조회는 비회원 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://www.index.go.kr/unity/potal/PotalMainGuide.do",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "국립중앙도서관",
+      "name": "국립중앙도서관",
+      "url": "https://www.nl.go.kr/",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "공개 원문 무료 열람 · 자료별 이용 조건 상이",
+      "signup": "원문·회원 서비스는 자료별 인증 조건 확인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://www.nl.go.kr/NL/contents/N71240000000.do",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "국사편찬위원회",
+      "name": "국사편찬위원회",
+      "url": "https://www.history.go.kr/",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "공개 자료 온라인 열람 무료",
+      "signup": "공개 자료 조회는 비회원 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://www.history.go.kr/",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "한국사데이터베이스",
+      "name": "한국사데이터베이스",
+      "url": "https://db.history.go.kr/",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "공개 사료 온라인 열람 무료",
+      "signup": "공개 사료 조회는 비회원 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://db.history.go.kr/main/notice/noticeView.do?noticeId=88",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "한국고전종합",
+      "name": "한국고전종합DB",
+      "url": "https://db.itkc.or.kr/",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "공개 자료 검색·열람 무료",
+      "signup": "검색·열람은 비회원 이용 가능 · 개인화 기능은 로그인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "공공기관 운영",
+      "sourceUrl": "https://db.itkc.or.kr/",
+      "importedVerifiedAt": "2026-09-26",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "KERIS",
+      "name": "한국교육학술정보원(KERIS)",
+      "url": "https://www.keris.or.kr/",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "공개 보고서 열람·다운로드 무료",
+      "signup": "공개 보고서 조회는 비회원 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "공공기관 운영",
+      "sourceUrl": "https://www.keris.or.kr/main/ad/pblcte/selectPblcteRRInfo.do?mi=1138&pblcteSeq=13432",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "국가기록원",
+      "name": "국가기록원",
+      "url": "https://www.archives.go.kr/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "공개 기록 검색 무료 · 사본·복제·배송 수수료 별도",
+      "signup": "온라인 사본 신청은 신청자 확인 절차 필요",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://www.archives.go.kr/next/newonline/onlineRequest.do",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "PubMed",
+      "name": "PubMed",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "서지·초록 검색 무료 · 외부 원문 조건 별도",
+      "signup": "검색·초록 조회는 가입 없이 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/about/",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "ScienceDirect",
+      "name": "ScienceDirect",
+      "url": "https://www.sciencedirect.com/",
+      "recommendedAges": [
+        "high",
+        "adult"
+      ],
+      "fee": "오픈액세스 원문 무료 · 다른 원문은 구독·구매 조건 확인",
+      "signup": "공개 검색 가능 · 구독 원문은 기관·계정 인증 조건 확인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "민간 운영",
+      "sourceUrl": "https://www.elsevier.com/products/sciencedirect",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "Canva",
+      "name": "Canva",
+      "url": "https://www.canva.com/",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "무료 기능 제공 · Pro 기능·요소는 유료일 수 있음",
+      "signup": "저장·협업은 계정 필요",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "민간 운영",
+      "sourceUrl": "https://www.canva.com/",
+      "importedVerifiedAt": "2026-09-26",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "미리캔버스",
+      "name": "미리캔버스",
+      "url": "https://www.miricanvas.com/ko",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "무료 기능 제공 · 일부 요소·기능 유료",
+      "signup": "저장·공유 기능은 로그인 조건 확인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "민간 운영",
+      "sourceUrl": "https://www.miricanvas.com/ko",
+      "importedVerifiedAt": "2026-09-26",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "네이버지식백과",
+      "name": "네이버 지식백과",
+      "url": "https://terms.naver.com/",
+      "recommendedAges": [
+        "mid",
+        "high",
+        "adult"
+      ],
+      "fee": "공개 항목 열람 무료",
+      "signup": "공개 항목 열람은 비회원 이용",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "민간 운영",
+      "sourceUrl": "https://help.naver.com/service/6005/contents/1674?lang=ko&osType=COMMONOS",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "국립중앙과학관",
+      "name": "국립중앙과학관",
+      "url": "https://www.science.go.kr/",
+      "recommendedAges": [
+        "elem",
+        "mid",
+        "high"
+      ],
+      "fee": "온라인 자료 열람 무료 · 관람·교육 프로그램은 별도 안내 확인",
+      "signup": "자료 조회는 비회원 이용 · 예약은 프로그램별 조건 확인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "정부 운영",
+      "sourceUrl": "https://www.science.go.kr/",
+      "importedVerifiedAt": "2026-09-26",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    },
+    {
+      "key": "에듀넷",
+      "name": "에듀넷",
+      "url": "https://www.edunet.net/",
+      "recommendedAges": [
+        "elem",
+        "mid",
+        "high"
+      ],
+      "fee": "교육 콘텐츠 무료 제공",
+      "signup": "콘텐츠·회원 서비스 이용 시 회원가입 조건 확인",
+      "signupAge": "미확인: 가입 연령 근거 재검수 필요",
+      "operator": "공공기관 운영",
+      "sourceUrl": "https://st.edunet.net/member/memberJoin?in_div=nedu",
+      "importedVerifiedAt": "2026-09-19",
+      "missing": [],
+      "independentReviewStatus": "pending",
+      "note": "시트 원본의 조건과 날짜를 가져온 기록이며 이번 실행이 각 사실을 독립 재검증했다는 뜻이 아닙니다."
+    }
+  ]
+}

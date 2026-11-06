@@ -45,13 +45,20 @@ function readRows_(spreadsheet, sheetName, optional) {
   }
 
   const values = sheet.getDataRange().getValues();
-  if (!values.length) return [];
+  // getDataRange() starts at A1, including empty rows above the table.
+  // Sheet editors may insert a blank row without moving the actual headers.
+  const headerIndex = values.findIndex(function (row) {
+    return row.some(function (value) {
+      return value != null && String(value).trim() !== "";
+    });
+  });
+  if (headerIndex < 0) return [];
 
-  const headers = values[0].map(function (value) {
+  const headers = values[headerIndex].map(function (value) {
     return String(value || "").trim();
   });
 
-  return values.slice(1).reduce(function (rows, valuesRow) {
+  return values.slice(headerIndex + 1).reduce(function (rows, valuesRow) {
     const row = {};
     let hasValue = false;
 
@@ -62,12 +69,15 @@ function readRows_(spreadsheet, sheetName, optional) {
       row[header] = value;
     });
 
-    if (hasValue && row.enabled !== false) rows.push(row);
+    if (hasValue && !/^(false|0|n|no)$/i.test(String(row.enabled == null ? "" : row.enabled).trim())) rows.push(row);
     return rows;
   }, []);
 }
 
 function normalizeSite_(site) {
+  site.categories = splitList_(site.categories || site.category);
+  site.category = site.categories[0] || "";
+  site.sortOrder = String(site.sortOrder == null ? "" : site.sortOrder).trim() !== "" && Number.isFinite(Number(site.sortOrder)) ? Number(site.sortOrder) : 9999;
   site.ages = splitList_(site.ages);
   site.subjects = splitList_(site.subjects);
   site.isGov = toBoolean_(site.isGov);
@@ -76,7 +86,7 @@ function normalizeSite_(site) {
 
 function createDetailsMap_(rows) {
   return rows.reduce(function (details, row) {
-    const key = String(row.key || "").trim();
+    const key = String(row.siteKey || row.key || "").trim();
     if (!key) return details;
 
     details[key] = {
@@ -85,6 +95,19 @@ function createDetailsMap_(rows) {
       notes: String(row.notes || ""),
       updatedAt: row.updatedAt || "",
       enabled: row.enabled !== false,
+      summary: String(row.summary || ""),
+      useCases: String(row.useCases || "").split("\n").filter(Boolean),
+      features: String(row.features || "").split("\n").filter(Boolean),
+      mainUses: String(row.mainUses || "").split("\n").filter(Boolean),
+      recommendedFor: String(row.recommendedFor || ""),
+      fee: String(row.fee || ""),
+      signup: String(row.signup || ""),
+      signupAge: String(row.signupAge || ""),
+      operatorName: String(row.operatorName || ""),
+      operatorType: String(row.operatorType || ""),
+      sourceUrl: String(row.sourceUrl || ""),
+      verifiedAt: row.verifiedAt instanceof Date ? Utilities.formatDate(row.verifiedAt, "Asia/Seoul", "yyyy-MM-dd") : String(row.verifiedAt || ""),
+      relatedGuideIds: splitList_(row.relatedGuideIds),
     };
     return details;
   }, {});

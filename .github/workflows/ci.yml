@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies
         run: npm install
@@ -25,6 +25,14 @@ jobs:
 
       - name: Unit tests
         run: npm run test:unit
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Firestore rules tests
+        run: npm run test:rules
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

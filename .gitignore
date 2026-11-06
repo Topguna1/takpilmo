@@ -3,3 +3,9 @@ playwright-report/
 test-results/
 coverage/
 .vitest/
+
+# Local runtime logs (historical logs under archive remain preserved)
+/debug.log
+/firebase-debug.log
+/firestore-debug.log
+/.firebase/

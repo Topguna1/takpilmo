@@ -39,7 +39,7 @@ export default [
     },
   },
   {
-    files: ["tests/**/*.js", "playwright.config.js", "vitest.config.js", "eslint.config.js"],
+    files: ["tests/**/*.js", "tests/**/*.mjs", "playwright.config.js", "vitest.config.js", "eslint.config.js"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -48,5 +48,9 @@ export default [
         ...globals.node,
       },
     },
+  },
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: { sourceType: "module", globals: { ...globals.node } },
   },
 ];

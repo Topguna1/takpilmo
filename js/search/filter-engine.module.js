@@ -100,7 +100,7 @@ function getFilteredSites(inputState = getState()) {
   const state = inputState || {};
   const sites = Array.isArray(state.sites) ? state.sites : [];
   const rawQ = state.currentSearchQuery || "";
-  const q = rawQ.trim().toLowerCase();
+  const q = rawQ.normalize("NFC").trim().toLowerCase();
   const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
   const ageMap = getAgeNamesMap();
   const subjectMap = getSubjectNamesMap();
@@ -112,7 +112,7 @@ function getFilteredSites(inputState = getState()) {
     if (state.currentAgeFilter !== "all" && !ages.includes(state.currentAgeFilter)) return false;
     if (state.currentCategoryFilter !== "all" && site?.category !== state.currentCategoryFilter) return false;
     if (state.currentSubjectFilter !== "all" && !subjects.includes(state.currentSubjectFilter)) return false;
-    if (state.currentGovFilter === "gov" && site?.isGov !== true) return false;
+    if (state.currentGovFilter === "gov" && site?.verifiedPublic !== true) return false;
     if (!tokens.length) return true;
 
     const searchTarget = (
@@ -123,9 +123,10 @@ function getFilteredSites(inputState = getState()) {
           `${site?.desc || ""} ` +
           `${getCategoryNameSafe(site?.category)} ` +
           `${ages.map((a) => ageMap[a]).join(" ")} ` +
-          `${subjects.map((sub) => subjectMap[sub]).join(" ")}`
+          `${subjects.map((sub) => subjectMap[sub]).join(" ")} ` +
+          `${site?.searchUses || ""}`
         )
-    ).toLowerCase();
+    ).normalize("NFC").toLowerCase();
 
     const siteChosung = (
       site?.chosungFull || (safeGetChosung(site?.name) + " " + safeGetChosung(site?.desc))
@@ -144,12 +145,6 @@ function getFilteredSites(inputState = getState()) {
 
       const tokenJamo = toJamoString(token);
       if (tokenJamo && siteJamo.includes(tokenJamo)) return true;
-
-      const tokenCh = safeGetChosung(token).toLowerCase();
-      if (tokenCh) {
-        if (siteChosung.includes(tokenCh)) return true;
-        if (safeGetChosung(site?.name).toLowerCase().includes(tokenCh)) return true;
-      }
 
       return false;
     });

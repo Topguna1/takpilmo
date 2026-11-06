@@ -381,7 +381,7 @@ function normalizeGuideLinks(rawLinks, guideIds, siteKeys) {
   );
 }
 
-function normalizeTipsPayload(rawTips, sites = []) {
+export function normalizeTipsPayload(rawTips, sites = []) {
   const subjects = normalizeTipSubjects(rawTips?.subjects);
   const subjectIds = new Set(subjects.map((subject) => subject.id));
   const sections = normalizeTipSections(rawTips?.sections, subjectIds);
@@ -504,7 +504,7 @@ async function loadContentFromRemote({ cacheMinutes = 0, preferCache = false } =
 
   let res;
   try {
-    res = await fetch(getContentApiUrl(), { cache: "no-store" });
+    res = await fetch(getContentApiUrl(), { cache: "no-store", signal: AbortSignal.timeout(6000) });
   } catch (error) {
     if (cached?.data) {
       console.warn("[data] remote content fetch failed; using stale cached sheet payload", error);
@@ -604,7 +604,7 @@ async function loadJSONData({ cacheMinutes = 0 } = {}) {
     applyContentToWindow({
       categories: localSnapshot.categories,
       sites: localSnapshot.sites,
-      detailsBySiteKey: remotePayload?.detailsBySiteKey || localSnapshot.detailsBySiteKey || {},
+      detailsBySiteKey: { ...localSnapshot.detailsBySiteKey, ...remotePayload?.detailsBySiteKey },
       tips: hasTipsContent(remoteTips) ? remoteTips : localTips,
     });
     window.__siteDataContentLoaded = false;
