@@ -2,35 +2,94 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function admin() {
-      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('enabled', true) == true;
     }
     function validKey(keys, i) {
       return keys.size() <= i || (keys[i] is string && keys[i].size() > 0 && keys[i].size() <= 200);
     }
-    function validSource(source) {
-      // Missing fields or non-string values fail closed when calling matches().
-      return source.keys().hasOnly(['label','url','checkedAt'])
-        && source.label.matches('[\\s\\S]{1,300}')
-        && source.url.size() <= 2048 && source.url.matches('https?://[^/ ].*')
-        && source.checkedAt.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}');
+    function validPublishedSource(s) {
+      return s.keys().hasOnly(['label','url','checkedAt'])
+        && s.label.matches('[\\s\\S]{1,300}')
+        && s.url.size() <= 2048 && s.url.matches('https?://[^/ ].*')
+        && s.checkedAt.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}');
     }
+    function validDraftSource(s) {
+      return s.keys().hasOnly(['label','url','checkedAt'])
+        && s.label.matches('[\\s\\S]{0,300}')
+        && s.url is string && s.url.size() <= 2048
+        && s.checkedAt.matches('[\\s\\S]{0,32}');
+    }
+    function validSources(sources, complete) {
+      return complete
+        ? ((sources.size() <= 0 || validPublishedSource(sources[0]))
+          && (sources.size() <= 1 || validPublishedSource(sources[1]))
+          && (sources.size() <= 2 || validPublishedSource(sources[2]))
+          && (sources.size() <= 3 || validPublishedSource(sources[3]))
+          && (sources.size() <= 4 || validPublishedSource(sources[4]))
+          && (sources.size() <= 5 || validPublishedSource(sources[5]))
+          && (sources.size() <= 6 || validPublishedSource(sources[6]))
+          && (sources.size() <= 7 || validPublishedSource(sources[7]))
+          && (sources.size() <= 8 || validPublishedSource(sources[8]))
+          && (sources.size() <= 9 || validPublishedSource(sources[9])))
+        : ((sources.size() <= 0 || validDraftSource(sources[0]))
+          && (sources.size() <= 1 || validDraftSource(sources[1]))
+          && (sources.size() <= 2 || validDraftSource(sources[2]))
+          && (sources.size() <= 3 || validDraftSource(sources[3]))
+          && (sources.size() <= 4 || validDraftSource(sources[4]))
+          && (sources.size() <= 5 || validDraftSource(sources[5]))
+          && (sources.size() <= 6 || validDraftSource(sources[6]))
+          && (sources.size() <= 7 || validDraftSource(sources[7]))
+          && (sources.size() <= 8 || validDraftSource(sources[8]))
+          && (sources.size() <= 9 || validDraftSource(sources[9])));
+    }
+    // Optional fields (blocks, tags, thumbnail, difficulty, minutes) are absent on older articles.
     function valid() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['title','summary','body','category','siteKeys','sources','status','createdAt','updatedAt','publishedAt'])
+      let blocks = d.get('blocks', []);
+      let tags = d.get('tags', []);
+      let thumbnail = d.get('thumbnail', '');
+      let difficulty = d.get('difficulty', '');
+      let minutes = d.get('minutes', 0);
+      return d.keys().hasOnly(['title','summary','body','category','siteKeys','sources','status','createdAt','updatedAt','publishedAt','blocks','tags','thumbnail','difficulty','minutes','revision','lastOperation'])
         && d.keys().hasAll(['title','summary','body','category','siteKeys','sources','status','createdAt','updatedAt','publishedAt'])
-        && d.title is string && d.title.size() > 0 && d.title.size() <= 160
-        && d.summary is string && d.summary.size() > 0 && d.summary.size() <= 300
-        && d.body is string && d.body.size() > 0 && d.body.size() <= 50000
-        && d.category in ['학습 정보','사이트 활용']
-        && d.status in ['draft','published']
+        && d.title is string && (d.status != 'published' || d.title.size() > 0) && d.title.size() <= 160
+        && d.summary is string && (d.status != 'published' || d.summary.size() > 0) && d.summary.size() <= 300
+        && d.body is string && d.body.size() <= 50000
+        && blocks is list && blocks.size() <= 60
+        && (d.status != 'published' || d.body.size() > 0 || blocks.size() > 0)
+        && d.get('lastOperation', '') is string && d.get('lastOperation', '').size() <= 100
+        && d.get('revision', 0) is int && d.get('revision', 0) >= 0
+        && tags is list && tags.size() <= 8
+        && thumbnail is string && thumbnail.size() <= 500
+        && difficulty in ['', '쉬움', '보통', '어려움']
+        && minutes is int && minutes >= 0 && minutes <= 600
+        && d.category in ['학습 정보','사이트 활용','팁·따라하기']
+        && d.status in ['draft','published','archived']
         && d.siteKeys is list && d.siteKeys.size() <= 3 && d.siteKeys.toSet().size() == d.siteKeys.size()
         && validKey(d.siteKeys,0) && validKey(d.siteKeys,1) && validKey(d.siteKeys,2)
         && d.sources is list && d.sources.size() <= 10
-        && (d.sources.size() <= 0 || validSource(d.sources[0])) && (d.sources.size() <= 1 || validSource(d.sources[1])) && (d.sources.size() <= 2 || validSource(d.sources[2])) && (d.sources.size() <= 3 || validSource(d.sources[3])) && (d.sources.size() <= 4 || validSource(d.sources[4])) && (d.sources.size() <= 5 || validSource(d.sources[5])) && (d.sources.size() <= 6 || validSource(d.sources[6])) && (d.sources.size() <= 7 || validSource(d.sources[7])) && (d.sources.size() <= 8 || validSource(d.sources[8])) && (d.sources.size() <= 9 || validSource(d.sources[9]))
-        && (d.status == 'draft' || d.sources.size() > 0)
+        && validSources(d.sources, d.status == 'published')
+        && (d.status != 'published' || d.category == '팁·따라하기' || d.sources.size() > 0)
         && d.createdAt is timestamp && d.updatedAt == request.time
         && (d.publishedAt == null || d.publishedAt is timestamp)
-        && (d.status == 'draft' || d.publishedAt is timestamp);
+        && (d.status != 'published' || d.publishedAt is timestamp);
+    }
+    match /articleDrafts/{id} {
+      allow read: if admin();
+      allow create: if admin() && valid() && request.resource.data.status == 'draft'
+        && request.resource.data.createdAt == request.time && request.resource.data.publishedAt == null;
+      allow update: if admin() && valid() && request.resource.data.status == 'draft'
+        && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.publishedAt == null;
+      allow delete: if admin();
+    }
+    match /adminHistory/{id} {
+      allow read: if admin();
+      allow create: if admin() && request.resource.data.keys().hasOnly(['articleId','kind','snapshot','savedAt','author','operation'])
+        && request.resource.data.articleId is string && request.resource.data.articleId.size() <= 1500
+        && request.resource.data.kind in ['draft','article'] && request.resource.data.snapshot is map
+        && request.resource.data.author == request.auth.uid && request.resource.data.savedAt == request.time
+        && request.resource.data.operation in ['draft','save'];
+      allow update, delete: if false;
     }
     match /admins/{uid} {
       allow get: if request.auth != null && request.auth.uid == uid;
@@ -38,12 +97,14 @@ service cloud.firestore {
     }
     match /infoArticles/{id} {
       allow read: if admin() || resource.data.status == 'published';
-      allow create: if admin() && valid() && request.resource.data.createdAt == request.time
-        && (request.resource.data.publishedAt == null || request.resource.data.publishedAt == request.time);
-      allow update: if admin() && valid()
-        && request.resource.data.createdAt == resource.data.createdAt
-        && (request.resource.data.publishedAt == resource.data.publishedAt
-          || (resource.data.publishedAt == null && request.resource.data.publishedAt == request.time));
+      allow create, update: if admin() && valid()
+        && (request.method == 'create'
+          ? (request.resource.data.createdAt == request.time
+            && (request.resource.data.publishedAt == null || request.resource.data.publishedAt == request.time))
+          : (request.resource.data.createdAt == resource.data.createdAt
+            && (request.resource.data.publishedAt == resource.data.publishedAt
+              || (resource.data.publishedAt == null && request.resource.data.publishedAt == request.time))));
+      // Articles are archived (status 'archived'), never deleted, so a mistake can always be undone.
       allow delete: if false;
     }
   }

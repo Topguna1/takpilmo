@@ -1,0 +1,28 @@
+.admin-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--surface)}
+.admin-main{max-width:960px;margin:0 auto;padding:24px 16px 80px}
+.admin-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th,.admin-table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.85em;background:var(--tint);color:var(--accent)}
+.badge.draft{background:#fef3c7;color:#92400e}.badge.archived{background:#e5e7eb;color:#374151}
+.field{display:flex;flex-direction:column;gap:4px;margin:12px 0}
+.field input,.field select,.field textarea{padding:10px;border:1px solid var(--input);border-radius:8px;background:var(--surface);color:var(--text)}
+.field small{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.blk-edit{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:14px 0;background:var(--surface)}
+.blk-edit>header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+.step-edit{border-left:4px solid var(--accent);padding-left:12px;margin:12px 0}
+.admin-msg{padding:10px 14px;border-radius:8px;margin:12px 0;background:var(--tint)}
+.admin-msg.error{background:#fee2e2;color:#7f1d1d}
+.admin-sticky{position:sticky;bottom:0;display:flex;flex-wrap:wrap;gap:8px;padding:12px 0;background:var(--bg);border-top:1px solid var(--line)}
+@media(max-width:600px){.grid2{grid-template-columns:1fr}}
+.field-error{color:#9f1239;font-weight:600;overflow-wrap:anywhere}
+[aria-invalid="true"]{outline:2px solid #be123c}
+.admin-page input,.admin-page textarea,.admin-page select{max-width:100%;min-width:0;box-sizing:border-box}
+.admin-page button{min-height:36px}
+.admin-page #saveState{background:var(--surface);padding:8px}
+.admin-page #listFilter{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}
+.admin-page .admin-bar{overflow-wrap:anywhere}
+.block-fields[hidden]{display:none}
+.admin-image-preview{max-width:100%;max-height:180px;object-fit:contain;margin:8px 0}
+.admin-bar{flex-wrap:wrap}.admin-bar strong{flex-shrink:0}.admin-bar #adminUser{font-size:.85rem}

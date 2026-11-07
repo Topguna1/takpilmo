@@ -1,3 +1,5 @@
+import { validateArticle as validateBlockArticle } from '../admin/validation.module.js';
+import { INFO_CATEGORIES } from './categories.module.js';
 export function validateArticle(data) {
   if (typeof data?.title !== 'string' || !data.title.trim() || data.title.length > 160) throw new Error('제목을 160자 이내로 입력하세요.');
   if (typeof data.summary !== 'string' || !data.summary.trim() || data.summary.length > 300) throw new Error('요약을 300자 이내로 입력하세요.');
@@ -17,7 +19,12 @@ export function validateArticle(data) {
 
 export const revisionOf = value => value ? String(value.seconds) + ':' + String(value.nanoseconds) : null;
 export function readableArticle(id, data) {
-  try { validateArticle(data); } catch { return null; }
+  try {
+    if(Object.hasOwn(data,'blocks')) {
+      const value={tags:[],thumbnail:'',minutes:0,difficulty:'',...data};
+      if(!INFO_CATEGORIES.includes(value.category)||!['draft','published','archived'].includes(value.status)||validateBlockArticle(value,value.status==='published').length)return null;
+    } else validateArticle(data);
+  } catch { return null; }
   return { ...data, id };
 }
 export const sameContent = (a,b) => ['title','summary','body','category','siteKeys','sources','status'].every(key => JSON.stringify(a?.[key]) === JSON.stringify(b?.[key]));
