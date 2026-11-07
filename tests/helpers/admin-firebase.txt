@@ -1,0 +1,32 @@
+const store=window.__adminTest={docs:{},delay:0,failList:false,failWrite:false,writes:0};
+let counter=0,clock=0;
+const stamp=()=>({seconds:1800000000,nanoseconds:++clock,toDate:()=>new Date(1800000000000)});
+const snap=ref=>({id:ref.id,exists:()=>!!store.docs[ref.path],data:()=>store.docs[ref.path]});
+export const getApps=()=>[];
+export const initializeApp=()=>({});
+export const getAuth=()=>({});
+export const getFirestore=()=>({});
+export const onAuthStateChanged=(_a,cb)=>queueMicrotask(()=>cb({uid:'owner',email:'owner@example.test'}));
+export const collection=(_db,name)=>({name});
+export const doc=(db,name,id)=>id?({id,path:name+'/'+id}):({id:'id-'+ ++counter,path:db.name+'/id-'+counter});
+export const getDoc=async ref=>ref.path.startsWith('admins/')?({exists:()=>true,data:()=>({enabled:true})}):snap(ref);
+export const serverTimestamp=stamp;
+export const orderBy=(...a)=>a;
+export const where=(...a)=>a;
+export const startAfter=(...a)=>a;
+export const limit=(...a)=>a;
+export const query=(...a)=>a;
+export const getDocs=async q=>{
+  if(store.failList && q[0].name==='infoArticles')throw Error('list failed');
+  let docs=Object.keys(store.docs).filter(p=>p.startsWith(q[0].name+'/')).map(path=>snap({path,id:path.split('/')[1]}));
+  const condition=q.find(a=>Array.isArray(a)&&a[1]==='==');
+  if(condition)docs=docs.filter(d=>d.data()[condition[0]]===condition[2]);
+  return {docs};
+};
+export const runTransaction=async (_db,cb)=>{
+  if(store.delay)await new Promise(r=>setTimeout(r,store.delay));
+  if(store.failWrite)throw Error('write failed');
+  const writes=[];
+  const result=await cb({get:async ref=>snap(ref),set:(ref,data)=>writes.push(()=>store.docs[ref.path]=data),delete:ref=>writes.push(()=>delete store.docs[ref.path])});
+  writes.forEach(w=>w());store.writes++;return result;
+};

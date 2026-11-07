@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { validateArticle } from '../js/info/data.module.js';
 import { markdown, articleView } from '../js/info/content.module.js';
+import { readableArticle } from '../js/info/validation.module.js';
 import { SEED_ARTICLES } from '../js/info/seed.module.js';
 describe('information content', () => {
   it('ships eight complete drafts with unique IDs, checked sources and examples', () => {
@@ -28,3 +29,5 @@ describe('information content', () => {
     expect(view).not.toContain('href="javascript:');expect(view).not.toContain('<img');
   });
 });
+
+it('reads published block tips while preserving legacy validation',()=>{const value={title:'팁',summary:'요약',body:'',blocks:[{type:'text',text:'블록 본문'}],category:'팁·따라하기',status:'published',siteKeys:[],sources:[]};expect(readableArticle('tip',value)?.id).toBe('tip');expect(readableArticle('bad',{...value,blocks:[{type:'unsupported'}]})).toBeNull();});

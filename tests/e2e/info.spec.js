@@ -51,32 +51,7 @@ test('library filters, search, direct article, related site and old URL redirect
   }
   await ready(page,'#/info/missing');await expect(page.getByRole('heading',{name:'글을 찾을 수 없어요'})).toBeVisible();
 });
-test('admin sign-in, preview, save failure recovery, unpublish and no overwrite seed',async ({page}) => {
-  await mock(page,{failSave:true});await ready(page,'#/admin/info');
-  await page.getByRole('button',{name:'Google 로그인'}).click();
-  await page.locator('[data-info-edit="sources"]').click();
-  await page.getByLabel('제목',{exact:true}).fill('수정한 정보 제목');
-  await page.getByRole('button',{name:'미리보기',exact:true}).click();
-  await expect(page.locator('#infoPreview h1')).toHaveText('수정한 정보 제목');
-  await page.getByRole('button',{name:'공개 저장',exact:true}).click();
-  await expect(page.locator('#infoSaveNotice')).toContainText('저장 실패');
-  await expect(page.getByLabel('제목',{exact:true})).toHaveValue('수정한 정보 제목');
-  await page.getByRole('button',{name:'공개 저장',exact:true}).click();await expect(page.locator('#infoSaveNotice')).toHaveText('저장했습니다.');
-  await page.getByRole('button',{name:'초안 저장 / 비공개',exact:true}).click();await expect(page.locator('[data-info-edit="sources"]')).toContainText('초안');
-  await page.getByRole('button',{name:'초기 글 8편 등록'}).click();await expect(page.locator('[data-info-edit="sources"]')).toContainText('수정한 정보 제목');
-  await page.locator('[data-nav=info]').click();await expect(page.locator('.info-card')).toHaveCount(7);
-});
-test('unprivileged account cannot see editor and shows bootstrap UID',async ({page}) => {
-  await mock(page,{admin:true,denied:true});await ready(page,'#/admin/info');
-  await expect(page.locator('.info-uid')).toHaveText('test-uid');await expect(page.locator('#infoEditForm')).toHaveCount(0);
-});
-test('dirty form guards links and browser back',async ({page}) => {
-  await mock(page,{admin:true});await ready(page,'#/info');await page.locator('a[href="#/admin/info"]').click();
-  await page.locator('[data-info-edit="sources"]').click();await page.getByLabel('제목',{exact:true}).fill('미저장 내용');
-  page.on('dialog',dialog=>dialog.dismiss());
-  await page.locator('[data-nav=sites]').click();await expect(page.getByLabel('제목',{exact:true})).toHaveValue('미저장 내용');
-  await page.goBack();await expect(page.getByLabel('제목',{exact:true})).toHaveValue('미저장 내용');
-});
+test('old admin route links to the separate editor',async({page})=>{await mock(page);await ready(page,'#/admin/info');await expect(page.getByRole('link',{name:'관리자 대시보드 열기'})).toHaveAttribute('href','./admin.html');await expect(page.locator('#infoEditForm')).toHaveCount(0);});
 test('information failure does not break catalog and missing config is recoverable',async ({page}) => {
   await mock(page,{fail:true});await ready(page);await expect(page.locator('#infoSurface')).toContainText('불러오지 못했어요');
   await page.locator('[data-nav=sites]').click();await expect(page.locator('.site-card')).toHaveCount(12);
@@ -93,7 +68,7 @@ for(const width of [320,390,768,1440]) test(`information layout ${width}`,async 
   await mock(page,{admin:true});await page.setViewportSize({width,height:1000});
   for(const hash of ['#/info','#/info/average','#/admin/info']) {
     await ready(page,hash);await expect(page.locator('#infoSurface')).toHaveAttribute('aria-busy','false');
-    if(hash.includes('admin')) await page.locator('[data-info-edit="average"]').click();
+    if(hash.includes('admin')) await expect(page.getByRole('link',{name:'관리자 대시보드 열기'})).toBeVisible();
     await page.evaluate(()=>document.body.classList.add('dark','font-large'));
     expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if([390,1440].includes(width)) await page.screenshot({path:`test-results/screens/info-${width}-${hash.includes('admin')?'admin':hash.includes('average')?'article':'list'}.png`,fullPage:true});

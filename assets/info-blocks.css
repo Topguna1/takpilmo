@@ -1,0 +1,17 @@
+/* Block-based info articles (tips with images, steps and video) */
+.info-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;background:var(--tint,#eee)}
+.info-hero{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:16px;margin:24px 0}
+.info-tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.blk{margin:28px 0}
+.blk-image{margin-inline:0}.blk-image img{display:block;max-width:100%;height:auto;margin:0 auto;border-radius:12px;border:1px solid var(--line,#e2e8f0)}
+.blk figcaption{margin-top:8px;font-size:.9em;color:var(--muted,#526174);text-align:center}
+.blk-video{margin-inline:0}.blk-video-frame{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}.blk-video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.blk-callout{padding:16px 20px;border-radius:12px;border:1px solid var(--line,#e2e8f0);border-left:6px solid var(--accent,#0f766e);background:var(--tint,#e6f4f1)}
+.blk-callout.blk-warn{border-left-color:#b45309;background:color-mix(in srgb,#f59e0b 14%,var(--surface,#fff))}
+.blk-callout p{margin:4px 0 0}
+.blk-steps{list-style:none;counter-reset:step;padding:0;margin:28px 0}
+.blk-step{counter-increment:step;position:relative;margin:0 0 28px;padding:0 0 0 52px}
+.blk-step::before{content:counter(step);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--accent,#0f766e);color:var(--surface,#fff);display:grid;place-items:center;font-weight:700}
+.blk-step h3{margin:0 0 6px;font-size:1.1em}.blk-step p{margin:0 0 10px}
+.blk-step img{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid var(--line,#e2e8f0)}
+.blk-text>:first-child{margin-top:0}
