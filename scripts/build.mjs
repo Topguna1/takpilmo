@@ -7,6 +7,17 @@ const root=process.cwd(), target=path.resolve(output);
 if(path.dirname(target)!==root || !['dist','.dev'].includes(path.basename(target)))throw Error('Unsafe build output');
 await rm(target,{recursive:true,force:true});await mkdir(target,{recursive:true});
 for(const name of ['assets','LICENSE','DATA_LICENSE'])await cp(name,path.join(output,name),{recursive:true});
+// Render the canonical license files as HTML so static hosting displays them inline.
+const escapeHtml = text => text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+await mkdir(path.join(output,'licenses'),{recursive:true});
+for(const [slug,file,title] of [['content','DATA_LICENSE','콘텐츠 라이선스'],['source','LICENSE','소스 라이선스']]) {
+  const text=await readFile(file,'utf8');
+  await writeFile(path.join(output,'licenses',slug+'.html'),`<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title} — 딱필모</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<style>:root{color-scheme:light dark}body{margin:0;background:#f7f8fa;color:#172533;font:1rem/1.7 system-ui,sans-serif}main{max-width:76ch;margin:auto;padding:32px 20px 64px}a{color:#087b83}h1{font-size:clamp(1.5rem,5vw,2rem)}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}nav{display:flex;gap:20px;flex-wrap:wrap;border-top:1px solid #8b99a444;padding-top:20px;margin-top:32px}@media(prefers-color-scheme:dark){body{background:#141e25;color:#e3eaf0}a{color:#8edbe0}}</style></head>
+<body><main><a href="../index.html#/">← 딱필모 홈</a><h1>${title}</h1><pre lang="en">${escapeHtml(text)}</pre><nav aria-label="라이선스"><a href="content.html">콘텐츠 라이선스</a><a href="source.html">소스 라이선스</a></nav></main></body></html>`);
+}
 await mkdir(path.join(output,'data'),{recursive:true});
 for(const name of ['sheet-snapshot.json','site-details.json','site-introductions.json'])await cp('data/'+name,output+'/data/'+name);
 let html=await readFile('index.html','utf8');
