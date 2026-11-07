@@ -120,3 +120,17 @@ test('production source and site-key safeguards are retained',async () => {
     await assertFails(setDoc(doc(db,'infoArticles','production-'+key),tip(value)));
   }
 });
+test('attackers cannot self-promote or read/write private collections with forged role claims',async () => {
+  for(const context of [env.unauthenticatedContext(),env.authenticatedContext('reader'),env.authenticatedContext('pretender',{admin:true,role:'admin'})]){
+    const db=context.firestore();
+    await assertFails(getDocs(collection(db,'admins')));
+    await assertFails(setDoc(doc(db,'admins','pretender'),{enabled:true,role:'admin'}));
+    await assertFails(updateDoc(doc(db,'admins','owner'),{enabled:false}));
+    await assertFails(getDoc(doc(db,'infoArticles','draft')));
+    await assertFails(getDocs(query(collection(db,'articleDrafts'),where('status','==','draft'))));
+    await assertFails(getDocs(collection(db,'adminHistory')));
+    await assertFails(setDoc(doc(db,'infoArticles','attempt'),tip()));
+    await assertFails(setDoc(doc(db,'articleDrafts','attempt'),tip()));
+    await assertFails(setDoc(doc(db,'adminHistory','attempt'),{articleId:'draft',kind:'article',snapshot:{},savedAt:serverTimestamp(),author:'owner',operation:'save'}));
+  }
+});

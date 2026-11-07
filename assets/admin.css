@@ -26,3 +26,12 @@
 .block-fields[hidden]{display:none}
 .admin-image-preview{max-width:100%;max-height:180px;object-fit:contain;margin:8px 0}
 .admin-bar{flex-wrap:wrap}.admin-bar strong{flex-shrink:0}.admin-bar #adminUser{font-size:.85rem}
+.admin-theme{display:flex;align-items:center;gap:8px;font-size:.9rem;margin-left:auto}
+.admin-theme select{padding:6px 10px;color:var(--text);background:var(--surface);border:1px solid var(--input);border-radius:8px;font:inherit}
+html[data-admin-theme="dark"]{background:#1a192d}
+html[data-admin-theme="dark"] .admin-page{--bg:#1a192d;--surface:#27263c;--text:#eeedf7;--muted:#b7b4cd;--line:#424058;--input:#77728f;--accent:#b5aaff;--tint:#363050}
+body.dark .admin-msg.error{background:#49283a;color:#ffd5df}
+body.dark .field-error{color:#ffb7c9}
+body.dark .badge.draft{background:#493f29;color:#ffe6a7}
+body.dark .badge.archived{background:#39364a;color:#e6e1f5}
+@media(max-width:380px){.admin-theme{width:100%;justify-content:flex-end}}
