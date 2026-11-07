@@ -69,12 +69,12 @@ function filterSites(sites, state, search, rank = []) {
   const categories = state.group === "all" ? null : GROUPS[state.group].categories;
   const candidates = sites.filter((s) => (!categories || [s.category, ...s.categories || []].some((c) => categories.includes(c))) && (state.category === "all" || [s.category, ...s.categories || []].includes(state.category)));
   const found = search({
-    sites: candidates,
+    sites: state.gov === "gov" ? candidates.filter(site=>site.verifiedPublic) : candidates,
     currentSearchQuery: state.q,
     currentAgeFilter: state.age,
     currentSubjectFilter: state.subject,
     currentCategoryFilter: "all",
-    currentGovFilter: state.gov
+    currentGovFilter: "all"
   });
   const seen = /* @__PURE__ */ new Set();
   const unique = found.filter((s) => {

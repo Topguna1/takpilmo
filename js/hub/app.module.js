@@ -5,7 +5,7 @@ import { installRetentionStorage } from "../retention/storage.module.js";
 import { installBookmarks } from "../retention/bookmarks.module.js";
 import { installRecentSites } from "../retention/recent.module.js";
 import Fuse from "../vendor/fuse.min.mjs";
-import { AGES, SUBJECTS, GROUPS, esc, keyOf, urlFor, listState, mergedDetail, filterSites, consolidateSites } from "./model.module.js";
+import { AGES, SUBJECTS, GROUPS, esc, keyOf, urlFor, listState, mergedDetail, operatorLabel, filterSites, consolidateSites } from "./model.module.js";
 import { createViews } from "./views.module.js";
 import { infoShell, installInfo } from '../info/view.module.js';
 const main = document.getElementById("main"), panel = document.getElementById("panel");
@@ -105,7 +105,7 @@ function render({ preserve = false } = {}) {
   currentHash = hash;
   let nav = "", title = "\uB531\uD544\uBAA8";
   if (path === "#/" || path === "#") {
-    main.innerHTML = views.home(storage.resolveSites(recent.getRecentKeys(), 3));
+    main.innerHTML = views.home(storage.resolveSites(recent.getRecentKeys(), 3), storage.resolveSites(bookmarks.getBookmarkKeys(), 4));
   } else if (path === '#/info' || path.startsWith('#/info/') || path === '#/admin/info') {
     nav = 'info';
     title = '딱필 정보';
@@ -344,6 +344,10 @@ main.addEventListener("submit", (e) => {
 main.addEventListener("click", async (e) => {
   const button = e.target.closest("button"), anchor = e.target.closest("a");
   if (button?.dataset.panel) panelOpen(button.dataset.panel);
+  if (button?.hasAttribute('data-reset-filters')) {
+    restoreNext = {focus:'resetFilters', y:scrollY};
+    navigate(urlFor('sites', {q:state?.q || ''}));
+  }
 
   if (button?.dataset.suggestion) {
     const input = main.querySelector("[role=combobox]");
@@ -462,7 +466,11 @@ async function start() {
     render({ preserve: true });
     const error = await catalogRequest;
     if (error) throw error;
-    sites = consolidateSites(window.initialSites || []);
+    sites = consolidateSites(window.initialSites || []).map(site => {
+      const d = detail(site);
+      return { ...site, ages: [...new Set([...site.ages, ...Array.isArray(d.recommendedAges) ? d.recommendedAges : []])], verifiedPublic: ['정부 운영', '공공기관 운영'].includes(operatorLabel(d)),
+        searchUses: [d.summary, ...[d.mainUses, d.useCases].flatMap(value => Array.isArray(value) ? value : [value || ''])].join(' ') };
+    });
     categories = Object.fromEntries(Object.entries(window.defaultCategories || {}).filter(([, v]) => v.enabled !== false));
     window.getCategoryName = (k) => categories[k]?.name || k;
     window.getAllCategories = () => categories;
