@@ -1,1 +1,13 @@
-{}
+{
+  "KOSIS": {
+    "recommendedAges": [
+      "mid"
+    ],
+    "useCases": [
+      "지역·시점·단위를 정해 과제용 공개 통계표를 찾을 때"
+    ],
+    "recommendedFor": "중·고등학생의 통계 탐구 (추천 대상이며 회원가입 연령 조건과 다름)",
+    "recommendationSourceUrl": "https://kosis.kr/civilComplaint/kosisGuideIndex.do",
+    "recommendationCheckedAt": "2026-10-31"
+  }
+}

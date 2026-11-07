@@ -13,7 +13,7 @@ test.beforeEach(async({page})=>{
 });
 async function ready(page,hash='') { await page.goto(`/index.html${hash}`);await page.waitForFunction(()=>!!window.ddakpilmo?.hub); }
 
-test('home offers two entrances and search preserves Korean input, autocomplete and IME',async({page})=>{
+test('home retains two entrances and supports saved sites and search preserves Korean input, autocomplete and IME',async({page})=>{
   await ready(page);await expect(page.locator('.entry')).toHaveCount(2);await expect(page.locator('.site-card')).toHaveCount(0);
   await page.locator('#homeSearch').fill('네이버');await page.locator('#homeSearch').press('Enter');
   await expect(page.locator('#searchInput')).toHaveValue('네이버');await expect(page.locator('.site-card')).toHaveCount(1);
@@ -43,7 +43,7 @@ test('flat pagination, filters and detail restore URL, scroll and focus',async({
 
 test('filter dialog cancellation and bookmark legacy persistence',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('ddakpilmo.retention.bookmarks.v1',JSON.stringify(['alpha-1'])));
-  await ready(page,'#/sites');await page.locator('[data-panel=filters]').click();await page.locator('#panel select[name=gov]').selectOption('gov');await page.getByRole('button',{name:'취소',exact:true}).click();
+  await ready(page,'#/sites');await page.locator('#govFilter').selectOption('gov');await expect(page.locator('#filteredCount')).toHaveText('0개');await page.locator('#resetFilters').click();
   await expect(page.locator('#filteredCount')).toHaveText('28개');
   await page.locator('[data-save="alpha-1"]').click();await expect(page.locator('[data-save="alpha-1"]')).toHaveAttribute('aria-pressed','false');
   await page.locator('[data-save="alpha-2"]').click();await page.locator('[data-nav=collection]').click();
@@ -210,7 +210,8 @@ test('overview renders new Sheets fields and separates signup age from recommend
   await page.route('**/script.google.com/**',r=>r.fulfill({json:{categories,sites,details:{bySiteKey:{RISS:fields}}}}));
   await ready(page,'#site=RISS');
   for(const text of ['논문 검색 · 참고자료 탐색','고등학생·교사','일부 무료','다운로드는 가입 필요','테스트 운영기관','공공기관 운영']) await expect(page.locator('.summary-card')).toContainText(text);
-  await expect(page.locator('.summary-card')).not.toContainText('만 14세');
+  await expect(page.locator('.summary-card dt').filter({hasText:'추천 대상'}).locator('+ dd')).not.toContainText('만 14세');
+  await expect(page.locator('.summary-card')).toContainText('가입 연령 조건만 14세 이상');
   await expect(page.locator('.detail-body')).toContainText('가입 연령 조건: 만 14세 이상');
   await expect(page.locator('.detail-footer')).toContainText('2026-09-13');
 });

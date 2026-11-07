@@ -10,7 +10,7 @@ const icons = {
 };
 const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
 
-export function homeView({ search, recent, count }) {
+export function homeView({ search, recent, saved = '', count }) {
   return `<div class="home home-rich">
     <section class="home-hero" aria-labelledby="homeTitle">
       <div class="hero-copy"><p class="eyebrow"><span class="eyebrow-dot"></span>공부의 시작을 조금 더 쉽게</p>
@@ -33,6 +33,7 @@ export function homeView({ search, recent, count }) {
       </div>
     </section>
     <section class="home-search search-shelf" aria-labelledby="homeSearchTitle"><div class="search-shelf-heading"><span class="shelf-icon">${icon('book')}</span><div><h2 id="homeSearchTitle">찾는 사이트가 있나요?</h2><p>이름을 알고 있다면 바로 검색해 보세요.</p></div></div>${search}<nav class="purpose-shortcuts" aria-label="목적별 사이트 바로가기">${Object.entries(GROUPS).map(([key,group])=>`<a href="${esc(urlFor('sites',{group:key}))}">${esc(group.name)} <span aria-hidden="true">↗</span></a>`).join('')}</nav></section>
+    ${saved}
     ${infoShelf()}
     <section class="home-journey" aria-labelledby="journeyTitle"><div><p class="eyebrow">찾는 순간부터 사용하는 순간까지</p><h2 id="journeyTitle">좋은 자료를 만나는<br>조금 더 쉬운 방법</h2></div><ol><li><span>1</span><div><h3>나에게 맞게 찾고</h3><p>목적이나 과목으로 필요한 사이트를 좁혀요.</p></div></li><li><span>2</span><div><h3>한눈에 확인하고</h3><p>대상과 특징, 이용 조건을 살펴봐요.</p></div></li><li><span>3</span><div><h3>내 공부에 활용해요</h3><p>사이트로 이동하거나 저장해 다시 찾아요.</p></div></li></ol></section>
     ${recent}
