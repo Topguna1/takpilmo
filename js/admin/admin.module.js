@@ -13,6 +13,7 @@ const userLabel = document.getElementById('adminUser');
 const state = { fb: null, auth: null, db: null, user: null, isAdmin: false, list: [], view: 'loading', draft: null, id: null, message: null, dirty: false, saving: false };
 const session = crypto.randomUUID();
 let recoveryTimer;
+let authGeneration = 0;
 let editVersion = 0;
 let expected = '', draftExpected = '';
 let publicStatus = 'draft';
@@ -52,26 +53,33 @@ async function boot() {
     state.auth = auth.getAuth(instance);
     state.db = fs.getFirestore(instance);
     auth.onAuthStateChanged(state.auth, async user => {
-      clearTimeout(recoveryTimer);state.draft=null;state.dirty=false;
-      state.user = user; state.isAdmin = false;
-      userLabel.textContent = user?.email || '';
-      if (user) {
-        try { const role=await fs.getDoc(fs.doc(state.db, 'admins', user.uid));state.isAdmin=role.exists() && role.data().enabled !== false; } catch { state.isAdmin = false; }
-        if (state.isAdmin) await loadList();
+      const generation=++authGeneration;
+      clearTimeout(recoveryTimer);state.draft=null;state.dirty=false;state.saving=false;state.list=[];state.history=[];
+      state.user=user;state.isAdmin=false;state.message=null;cursor=null;pending=null;
+      userLabel.textContent=user?.email || '';
+      root.innerHTML='<p role="status">로그인 권한을 확인하고 있어요.</p>';
+      let allowed=false;
+      if(user){
+        try{const role=await fs.getDoc(fs.doc(state.db,'admins',user.uid));allowed=role.exists() && role.data().enabled !== false;}catch{allowed=false;}
       }
-      state.view = !user ? 'login' : !state.isAdmin ? 'denied' : 'list';
-      render();
+      if(generation!==authGeneration)return;
+      state.isAdmin=allowed;
+      if(allowed)await loadList();
+      if(generation!==authGeneration)return;
+      state.view=!user?'login':!allowed?'denied':'list';render();
     });
   } catch { root.innerHTML = '<p class="admin-msg error">Firebase를 불러오지 못했어요. 네트워크를 확인하고 새로고침해 주세요.</p>'; }
 }
 async function loadList() {
   const { fb, db } = state;
+  const generation=authGeneration;
   try {
     const snap = await fb.getDocs(fb.query(fb.collection(db, 'infoArticles'), fb.orderBy('updatedAt', 'desc'), ...(cursor ? [fb.startAfter(cursor)] : []), fb.limit(25)));
+    if(generation!==authGeneration)return false;
     const rows = snap.docs.map(d => ({ ...d.data(), id: d.id }));
     state.list = cursor ? [...state.list, ...rows] : rows;
     cursor = snap.docs.at(-1) || cursor; hasMore = rows.length === 25; listFailed = false; return true;
-  } catch { listFailed = true; setMessage('글 목록 갱신에 실패했어요. 다시 시도해 주세요.', true); return false; }
+  } catch { if(generation!==authGeneration)return false;listFailed = true; setMessage('글 목록 갱신에 실패했어요. 다시 시도해 주세요.', true); return false; }
 }
 const dateOf = item => item.updatedAt?.toDate?.().toLocaleDateString('ko-KR') || '';
 
@@ -175,6 +183,7 @@ async function save(asDraft = false) {
       if(el){el.setAttribute('aria-invalid','true'); const note=document.createElement('p');note.className='field-error';note.textContent=e.message;el.after(note);} }
     root.querySelector('[aria-invalid]')?.scrollIntoView({block:'center'}); return;
   }
+  const generation=authGeneration;
   const version=editVersion, id=state.id, working=asDraft && publicStatus==='published';
   const signature=JSON.stringify({id,content,working});
   if(pending?.signature!==signature)pending={signature,id:crypto.randomUUID()};
@@ -184,6 +193,7 @@ async function save(asDraft = false) {
   recoverLocally();
   try {
     const result = await saveDocument(state.fb,state.db,{id,content,expected,draftExpected,working,uid:state.user.uid,operation:asDraft?'draft':'save',operationId:pending.id});
+    if(generation!==authGeneration)return;
     expected=result.expected;draftExpected=result.draftExpected;pending=null;state.hasServer=true;
     const previousKey=localKey();state.recoveryId=id;try{localStorage.removeItem(previousKey);}catch{}
     if(!working)publicStatus=content.status;
@@ -192,11 +202,13 @@ async function save(asDraft = false) {
     cursor=null; const listed=await loadList();
     setMessage((working?'공개 본문을 유지하고 초안을 저장했어요.':'저장했어요.')+(state.dirty?' 추가 변경은 아직 서버에 저장하지 않았어요.':'')+(!listed?' 목록 갱신에 실패했어요. 다시 시도할 수 있어요.':''));
   } catch(error) {
+    if(generation!==authGeneration)return;
     setMessage(error.code==='conflict'?error.message:error.code==='permission-denied'?'저장이 거부됐어요. 관리자 권한과 배포 규칙을 확인해 주세요.':'저장 결과를 확인하지 못했어요. 작성본은 유지했어요. 최신 글을 다시 확인한 뒤 재시도해 주세요.',true);
   } finally {
-    state.saving=false; showMessage(); if(!state.dirty && asDraft && !working){state.draft.status='draft';const statusSelect=root.querySelector('[data-f="status"]');if(statusSelect)statusSelect.value='draft';}
+    if(generation===authGeneration){state.saving=false;showMessage(); if(!state.dirty && asDraft && !working){state.draft.status='draft';const statusSelect=root.querySelector('[data-f="status"]');if(statusSelect)statusSelect.value='draft';}
     if(button?.isConnected) {button.disabled=false;button.textContent=publicStatus==='published'?'공개 변경 반영':'저장';}
     const status=document.getElementById('saveState'); if(status) status.textContent=state.dirty?'서버 미저장 변경이 있어요':'서버 저장 완료 · '+new Date().toLocaleTimeString('ko-KR');
+    }
   }
 }
 async function openEditor(id) {

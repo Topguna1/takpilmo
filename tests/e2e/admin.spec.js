@@ -74,3 +74,35 @@ for(const width of [320,390,768,1440]) test(`admin layout ${width}`,async({page}
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   if([320,1440].includes(width))await page.screenshot({path:`test-results/screens/admin-${width}.png`,fullPage:true});
 });
+test('admin theme follows the device and remembers an explicit choice',async({page})=>{
+  await page.emulateMedia({colorScheme:'dark'});await setup(page);
+  await expect(page.locator('body')).toHaveClass(/dark/);
+  await page.getByLabel('화면 테마').selectOption('light');
+  await expect(page.locator('body')).not.toHaveClass(/dark/);
+  await page.reload();await expect(page.locator('body')).not.toHaveClass(/dark/);
+  await page.getByLabel('화면 테마').selectOption('system');
+  await expect(page.locator('body')).toHaveClass(/dark/);
+  await page.emulateMedia({colorScheme:'light'});await expect(page.locator('body')).not.toHaveClass(/dark/);
+  await page.getByLabel('화면 테마').selectOption('dark');await page.getByRole('button',{name:'새 글 쓰기',exact:true}).click();
+  await page.screenshot({path:'test-results/screens/admin-dark.png',fullPage:true});
+});
+test('switching to an unprivileged account removes the editor and private content',async({page})=>{
+  const body=sdk.replace("export const onAuthStateChanged=(_a,cb)=>queueMicrotask(()=>cb({uid:'owner',email:'owner@example.test'}));", "export const onAuthStateChanged=(_a,cb)=>{window.__switchUser=cb;queueMicrotask(()=>cb({uid:'owner',email:'owner@example.test'}));};");
+  await page.route('**/admin-test-sdk.js',r=>r.fulfill({contentType:'application/javascript',body}));
+  await page.route('**/firebasejs/12.3.0/*',r=>r.fulfill({contentType:'application/javascript',body:'export * from "/admin-test-sdk.js";'}));
+  await page.goto('/admin.html');await page.getByRole('button',{name:'새 글 쓰기',exact:true}).click();await title(page).fill('비공개 작성본');
+  await page.evaluate(()=>window.__switchUser(null));
+  await expect(page.getByRole('heading',{name:'관리자 로그인',exact:true})).toBeVisible();
+  await expect(page.locator('#editor')).toHaveCount(0);await expect(page.locator('#app')).not.toContainText('비공개 작성본');
+});
+test('a late admin check cannot restore access after switching to a reader',async({page})=>{
+  let body=sdk.replace("export const onAuthStateChanged=(_a,cb)=>queueMicrotask(()=>cb({uid:'owner',email:'owner@example.test'}));", "export const onAuthStateChanged=(_a,cb)=>{window.__switchUser=cb;queueMicrotask(()=>cb({uid:'owner',email:'owner@example.test'}));};");
+  body=body.replace("export const getDoc=async ref=>ref.path.startsWith('admins/')?({exists:()=>true,data:()=>({enabled:true})}):snap(ref);", "export const getDoc=async ref=>{if(ref.path==='admins/owner'){await new Promise(r=>setTimeout(r,500));window.__ownerChecked=true;return {exists:()=>true,data:()=>({enabled:true})};}return ref.path.startsWith('admins/')?{exists:()=>false}:snap(ref);};");
+  await page.route('**/admin-test-sdk.js',r=>r.fulfill({contentType:'application/javascript',body}));
+  await page.route('**/firebasejs/12.3.0/*',r=>r.fulfill({contentType:'application/javascript',body:'export * from "/admin-test-sdk.js";'}));
+  await page.goto('/admin.html');await page.waitForFunction(()=>!!window.__switchUser);
+  await page.evaluate(()=>window.__switchUser({uid:'reader',email:'reader@example.test'}));
+  await page.waitForFunction(()=>window.__ownerChecked);
+  await expect(page.getByRole('heading',{name:'권한이 없어요',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'새 글 쓰기',exact:true})).toHaveCount(0);
+});
