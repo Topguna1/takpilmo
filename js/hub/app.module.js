@@ -22,6 +22,7 @@ let state, currentHash = "", collectionItems = [], composing = false, suggestion
 let loading = true, loadFailed = false, starting = false, restoreNext = null;
 const snapshots = /* @__PURE__ */ new Map();
 let noticeTimer;
+let allCategoriesOpen=false;
 function notify(message) {
   const node = (panel.open && panel.querySelector("[data-panel-notice]")) || document.getElementById("notice");
   node.textContent = message;
@@ -117,6 +118,8 @@ function render({ preserve = false } = {}) {
     const found = results();
     state.page = Math.min(state.page, Math.max(1, Math.ceil(found.length / 12)));
     main.innerHTML = views.list(state, found);
+    main.querySelector('#allCategories').hidden=!allCategoriesOpen;
+    main.querySelector('#allCategoriesToggle').setAttribute('aria-expanded',String(allCategoriesOpen));
   } else if (path.startsWith("#site=")) {
     nav = "sites";
     let key = "";
@@ -343,6 +346,11 @@ main.addEventListener("submit", (e) => {
 });
 main.addEventListener("click", async (e) => {
   const button = e.target.closest("button"), anchor = e.target.closest("a");
+  if(button?.id==='allCategoriesToggle'){
+    allCategoriesOpen=!allCategoriesOpen;
+    document.getElementById('allCategories').hidden=!allCategoriesOpen;
+    button.setAttribute('aria-expanded',String(allCategoriesOpen));
+  }
   if (button?.dataset.panel) panelOpen(button.dataset.panel);
   if (button?.hasAttribute('data-reset-filters')) {
     restoreNext = {focus:'resetFilters', y:scrollY};
@@ -379,9 +387,10 @@ main.addEventListener("click", async (e) => {
     }
     notify(before ? "\uC800\uC7A5\uC744 \uD574\uC81C\uD588\uC2B5\uB2C8\uB2E4." : "\uC0AC\uC774\uD2B8\uB97C \uC800\uC7A5\uD588\uC2B5\uB2C8\uB2E4.");
   }
-  if (button?.dataset.copy || button?.dataset.share) {
+  if (button?.hasAttribute('data-copy-url') || button?.dataset.copy || button?.dataset.share) {
     let input = button.dataset.copy ? document.getElementById(button.dataset.copy) : null;
-    const text = input ? input.value : new URL(button.dataset.share, location.href).href;
+    const text = button.hasAttribute('data-copy-url') ? button.dataset.copyUrl : input ? input.value : new URL(button.dataset.share, location.href).href;
+    if(!text){notify('복사할 사이트 주소가 없어요.');return;}
     try {
       await navigator.clipboard.writeText(text);
       notify("\uBCF5\uC0AC\uD588\uC2B5\uB2C8\uB2E4.");
@@ -431,11 +440,20 @@ window.addEventListener("popstate", () => {
   restoreNext = restoreNext || snapshots.get(location.hash) || null;
   render();
 });
-window.addEventListener("storage", () => {
-  applyPreferences();
-  snapshot();
-  restoreNext = snapshots.get(currentHash);
-  render({ preserve: true });
+window.addEventListener("storage", event => {
+  const preferences=['siteTheme','siteFontSize','siteAnim','siteRadius'];
+  if(event.key===null || preferences.includes(event.key))applyPreferences();
+  const keys=[storage.keys.bookmarks,storage.keys.recentSites,storage.keys.legacyRecentSites];
+  if(event.key!==null && !keys.includes(event.key))return;
+  // Cross-tab admin autosaves must not replace public detail buttons mid-click.
+  if(currentHash.startsWith('#site=')){
+    main.querySelectorAll('[data-save]').forEach(button=>{
+      const active=bookmarks.isBookmarked(button.dataset.save);
+      button.setAttribute('aria-pressed',String(active));button.textContent=active?'저장됨':'저장';
+    });
+    return;
+  }
+  snapshot();restoreNext=snapshots.get(currentHash);render({preserve:true});
 });
 window.addEventListener("offline", () => notify("\uC778\uD130\uB137 \uC5F0\uACB0\uC774 \uB04A\uC5B4\uC84C\uC2B5\uB2C8\uB2E4. \uC678\uBD80 \uC0AC\uC774\uD2B8 \uBC29\uBB38\uC5D0\uB294 \uC5F0\uACB0\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."));
 async function loadOptional(path, fallback) {

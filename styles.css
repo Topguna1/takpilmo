@@ -1010,3 +1010,13 @@ body.dark .settings-options button[aria-pressed="true"] { color: #143b34; }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; } }
 
 .home-saved{margin:48px 0}.home-saved .card-grid{margin-top:20px}
+.category-toolbar{display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--line);margin:24px 0;flex-wrap:wrap}
+.category-toolbar .group-tabs{flex:1;margin:0;border:0;padding-bottom:16px}
+#allCategoriesToggle{margin:0 0 16px auto;flex-shrink:0}
+.all-categories{display:flex;flex-wrap:wrap;gap:10px;padding:16px;margin-bottom:24px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.all-categories[hidden]{display:none}
+.all-categories .button{border-radius:999px;max-width:100%;overflow-wrap:anywhere}
+#allCategoriesToggle[aria-expanded="true"] span{transform:rotate(180deg)}
+.all-categories [aria-current]{background:var(--tint);border-color:var(--accent)}
+.detail-layout .site-card:hover{transform:none}
+@media(max-width:600px){.category-toolbar{gap:10px;align-items:stretch}.category-toolbar .mobile-category{margin:0 0 16px;flex:1}#allCategoriesToggle{white-space:normal;flex:1;min-width:0}}

@@ -1,7 +1,7 @@
 const AGES = { elem: "\uCD08\uB4F1", mid: "\uC911\uB4F1", high: "\uACE0\uB4F1", adult: "\uC131\uC778" };
 const SUBJECTS = { korean: "\uAD6D\uC5B4", english: "\uC601\uC5B4", math: "\uC218\uD559", social: "\uC0AC\uD68C", science: "\uACFC\uD559", history: "\uC5ED\uC0AC", art: "\uBBF8\uC220", music: "\uC74C\uC545", pe: "\uCCB4\uC721", tech: "\uAE30\uC220\xB7\uAC00\uC815", coding: "\uC815\uBCF4(\uCF54\uB529)", language: "\uC678\uAD6D\uC5B4", general: "\uC885\uD569" };
 const GROUPS = {
-  study: { name: "\uACF5\uBD80\xB7\uB3C5\uC11C", categories: ["learning", "reading"] },
+  study: { name: "\uACF5\uBD80\xB7\uB3C5\uC11C", categories: ["learning", "reading", "textbook"] },
   exam: { name: "\uC2DC\uD5D8 \uB300\uBE44", categories: ["schoolexam", "exam"] },
   research: { name: "\uACFC\uC81C\xB7\uD0D0\uAD6C", categories: ["info", "explore"] },
   career: { name: "\uC9C4\uB85C\xB7\uC9C4\uD559", categories: ["highschool", "career"] },
