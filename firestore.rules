@@ -88,7 +88,7 @@ service cloud.firestore {
         && request.resource.data.articleId is string && request.resource.data.articleId.size() <= 1500
         && request.resource.data.kind in ['draft','article'] && request.resource.data.snapshot is map
         && request.resource.data.author == request.auth.uid && request.resource.data.savedAt == request.time
-        && request.resource.data.operation in ['draft','save'];
+        && request.resource.data.operation in ['draft','save','delete'];
       allow update, delete: if false;
     }
     match /admins/{uid} {
@@ -104,8 +104,7 @@ service cloud.firestore {
           : (request.resource.data.createdAt == resource.data.createdAt
             && (request.resource.data.publishedAt == resource.data.publishedAt
               || (resource.data.publishedAt == null && request.resource.data.publishedAt == request.time))));
-      // Articles are archived (status 'archived'), never deleted, so a mistake can always be undone.
-      allow delete: if false;
+      allow delete: if admin();
     }
   }
 }

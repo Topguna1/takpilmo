@@ -1,5 +1,5 @@
 import { validateArticle, convertLegacy } from './validation.module.js';
-import { saveDocument, versionOf, recoveryKey, storeRecovery, findRecovery } from './persistence.module.js';
+import { saveDocument, deleteDocument, versionOf, recoveryKey, storeRecovery, findRecovery } from './persistence.module.js';
 import { firebaseConfig } from '../info/firebase-config.module.js';
 import { esc } from '../hub/model.module.js';
 import { articleView } from '../info/content.module.js';
@@ -93,7 +93,7 @@ function render() {
 }
 function renderList() {
   const filtered = state.list.filter(i => (!filter || i.status === filter) && i.title.toLowerCase().includes(search.toLowerCase())).sort((a,b)=>(b[sort]?.seconds||0)-(a[sort]?.seconds||0));
-  const rows = filtered.slice(0,pageSize).map(item => `<tr><td><strong>${esc(item.title || '제목 없는 초안')}</strong><br><small>${esc(item.category)}</small></td><td><span class="badge ${esc(item.status)}">${esc(STATUSES[item.status] || item.status)}</span></td><td>${esc(dateOf(item))}</td><td class="admin-row"><button data-act="edit" data-id="${esc(item.id)}">수정</button>${item.status === 'published' ? `<a class="button" href="./#/info/${encodeURIComponent(item.id)}" target="_blank" rel="noopener noreferrer">보기 ↗</a>` : ''}</td></tr>`).join('');
+  const rows = filtered.slice(0,pageSize).map(item => `<tr><td><strong>${esc(item.title || '제목 없는 초안')}</strong><br><small>${esc(item.category)}</small></td><td><span class="badge ${esc(item.status)}">${esc(STATUSES[item.status] || item.status)}</span></td><td>${esc(dateOf(item))}</td><td class="admin-row"><button data-act="edit" data-id="${esc(item.id)}">수정</button><button class="admin-danger" data-act="delete" data-id="${esc(item.id)}">글 삭제</button>${item.status === 'published' ? `<a class="button" href="./#/info/${encodeURIComponent(item.id)}" target="_blank" rel="noopener noreferrer">보기 ↗</a>` : ''}</td></tr>`).join('');
   const counts = Object.keys(STATUSES).map(s => `${STATUSES[s]} ${state.list.filter(i => i.status === s).length}`).join(' · ');
   root.innerHTML = `<div class="admin-row"><h1 style="margin-right:auto">글 관리</h1><button data-act="new">새 글 쓰기</button><button data-act="logout">로그아웃</button></div><p>불러온 글: ${esc(counts)}</p><form id="listFilter"><label>상태 <select name="status">${opt(['',...Object.keys(STATUSES)],filter,v=>STATUSES[v] || '전체')}</select></label><label>제목 검색 <input name="q" value="${esc(search)}"></label><label>정렬 <select name="sort">${opt(['updatedAt','publishedAt'],sort,v=>v==='updatedAt'?'수정일':'공개일')}</select></label><button>적용</button></form><p>검색 범위: 불러온 ${state.list.length}개 글${hasMore ? ' (더 불러오기로 범위를 넓힐 수 있어요)' : ' (전체)'}</p><button data-act="refresh">목록 새로고침</button>${hasMore ? '<button data-act="more">더 불러오기</button>' : ''}${messageHtml()}${rows ? `<div style="overflow-x:auto"><table class="admin-table"><thead><tr><th>제목</th><th>상태</th><th>수정일</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p>${listFailed ? '글 목록을 확인할 수 없어요.' : '표시할 글이 없어요.'}</p>`}`;
 }
@@ -118,7 +118,7 @@ function renderEditor() {
   <div id="editor">
   ${input('title', '제목 (160자 이내)', d.title, '')}
   <label class="field">요약 (300자 이내, 목록 카드에 표시)<textarea data-f="summary" rows="2">${esc(d.summary)}</textarea></label>
-  <div class="grid2"><label class="field">분류<select data-f="category">${opt(INFO_CATEGORIES, d.category)}</select></label><label class="field">상태<select data-f="status">${opt(Object.keys(STATUSES), d.status, v => STATUSES[v])}</select><small>공개로 저장하면 바로 사이트에 보여요. 보관은 삭제 대신 숨기는 용도예요.</small></label></div>
+  <div class="grid2"><label class="field">분류<select data-f="category">${opt(INFO_CATEGORIES, d.category)}</select></label><label class="field">상태<select data-f="status">${opt(Object.keys(STATUSES), d.status, v => STATUSES[v])}</select><small>공개로 저장하면 바로 사이트에 보여요. 보관은 글을 숨기며, 글 삭제는 서버의 글과 작업 초안을 지워요.</small></label></div>
   <div class="grid2"><label class="field">난이도<select data-f="difficulty">${opt(DIFFICULTIES, d.difficulty)}</select></label>${input('minutes', '소요 시간(분)', d.minutes || '', 'inputmode="numeric"')}</div>
   ${input('thumbnail', '대표 이미지 주소 (선택, https://)', d.thumbnail, 'inputmode="url"')}
   ${input('tags', '태그 (쉼표로 구분, 최대 8개)', (d.tags || []).join(', '))}
@@ -129,7 +129,7 @@ function renderEditor() {
   ${d.blocks.map((b, i) => blockEditor(b, i, d.blocks.length)).join('') || '<p>아래 버튼으로 블록을 추가하세요.</p>'}
   <div class="admin-row">${adds}</div>
   </div>
-  <div class="admin-sticky"><button type="button" data-act="save">${publicStatus === 'published' ? '공개 변경 반영' : '저장'}</button><button type="button" data-act="draft">초안 저장</button><button type="button" data-act="undo">되돌리기</button><button type="button" data-act="history">이전 버전</button><button type="button" data-act="export">원문 내보내기</button><button type="button" data-act="preview">미리보기</button><button type="button" data-act="back">닫기</button></div>`;
+  <div class="admin-sticky"><button type="button" data-act="save">${publicStatus === 'published' ? '공개 변경 반영' : '저장'}</button><button type="button" data-act="draft">초안 저장</button><button type="button" data-act="undo">되돌리기</button><button type="button" data-act="history">이전 버전</button><button type="button" data-act="export">원문 내보내기</button><button type="button" data-act="preview">미리보기</button><button type="button" data-act="back">닫기</button>${state.hasServer ? '<button type="button" class="admin-danger" data-act="delete">글 삭제</button>' : ''}</div>`;
 }
 function renderPreview() {
   root.innerHTML = `<div class="admin-row"><button type="button" data-act="edit-back">← 편집으로 돌아가기</button><span>미리보기 (저장 전 내용이에요)</span></div><div style="margin-top:16px">${articleView({ ...state.draft, id: state.id || 'preview' }, sites)}</div>`;
@@ -211,6 +211,33 @@ async function save(asDraft = false) {
     }
   }
 }
+async function removeArticle(el) {
+  if(!state.isAdmin || state.saving)return;
+  const generation=authGeneration, editing=state.view==='edit';
+  const id=editing?state.id:el.dataset.id;
+  const item=state.list.find(row=>row.id===id);
+  if(!item)return;
+  state.saving=true;el.disabled=true;
+  try {
+    const draftSnap=editing?null:await state.fb.getDoc(state.fb.doc(state.db,'articleDrafts',id));
+    if(generation!==authGeneration)return;
+    const articleVersion=editing?expected:versionOf(item);
+    const draftVersion=editing?draftExpected:versionOf(draftSnap.exists()?draftSnap.data():null);
+    if(!confirm(`「${item.title || '제목 없는 초안'}」 글을 삭제할까요?\n공개 글과 작업 초안이 삭제되며 목록에서 복원할 수 없어요.\n${editing && state.dirty?'저장하지 않은 변경도 폐기돼요.\n':''}기존 수정 이력과 삭제 직전 내용은 관리자 기록으로 남아요.`))return;
+    await deleteDocument(state.fb,state.db,{id,expected:articleVersion,draftExpected:draftVersion,uid:state.user.uid});
+    if(generation!==authGeneration)return;
+    clearTimeout(recoveryTimer);
+    try{for(const record of findRecovery(localStorage,state.user.uid,id))localStorage.removeItem(record.key);}catch{/* Storage may be unavailable; server deletion has already completed. */}
+    state.list=state.list.filter(row=>row.id!==id);
+    state.draft=null;state.dirty=false;state.hasServer=false;undo=null;pending=null;state.view='list';cursor=null;
+    const listed=await loadList();
+    if(generation!==authGeneration)return;
+    setMessage('글을 삭제했어요.'+(!listed?' 목록 갱신에 실패했어요. 새로고침해 주세요.':''));render();
+  } catch(error){
+    if(generation!==authGeneration)return;
+    setMessage(error.code==='conflict'?error.message:error.code==='permission-denied'?'삭제가 거부됐어요. 관리자 권한과 배포 규칙을 확인해 주세요.':'삭제 결과를 확인하지 못했어요. 목록 새로고침으로 확인한 뒤 다시 시도해 주세요.',true);showMessage();
+  } finally {if(generation===authGeneration){state.saving=false;if(el.isConnected)el.disabled=false;}}
+}
 async function openEditor(id) {
   if(state.saving) return;
   const found=id && state.list.find(i=>i.id===id);state.hasServer=!!found;
@@ -237,6 +264,7 @@ const actions = {
   new: () => openEditor(null),
   edit: el => openEditor(el.dataset.id),
   back: () => { if (state.dirty && !confirm('저장하지 않은 변경이 있어요. 나갈까요?')) return; if(state.dirty){try{localStorage.removeItem(localKey());}catch{}} clearTimeout(recoveryTimer);state.dirty = false; setMessage(null); state.view = 'list'; render(); },
+  delete: el => removeArticle(el),
   save: () => save(false),
   draft: () => save(true),
   refresh: async () => { cursor=null; await loadList(); render(); },
