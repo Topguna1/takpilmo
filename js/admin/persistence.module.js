@@ -24,6 +24,23 @@ export async function saveDocument(f, db, { id, content, expected, draftExpected
 }
 
 export function recoveryKey(uid, id, session) { return `takpilmo:editor:${uid}:${id}:${session}`; }
+export async function deleteDocument(f, db, { id, expected, draftExpected, uid }) {
+  const articleRef=f.doc(db,'infoArticles',id), draftRef=f.doc(db,'articleDrafts',id);
+  const articleHistory=f.doc(f.collection(db,'adminHistory')), draftHistory=f.doc(f.collection(db,'adminHistory'));
+  return f.runTransaction(db,async tx=>{
+    const articleSnap=await tx.get(articleRef), draftSnap=await tx.get(draftRef);
+    const article=articleSnap.exists()?articleSnap.data():null, draft=draftSnap.exists()?draftSnap.data():null;
+    // An already completed deletion is safe to retry after an uncertain network result.
+    if(!article && !draft)return;
+    if(versionOf(article)!==expected || versionOf(draft)!==draftExpected)throw Object.assign(new Error('다른 탭에서 변경됐어요. 최신 글을 다시 확인한 뒤 삭제해 주세요.'),{code:'conflict'});
+    const savedAt=f.serverTimestamp();
+    for(const [snapshot,kind,ref] of [[article,'article',articleHistory],[draft,'draft',draftHistory]]){
+      if(snapshot)tx.set(ref,{articleId:id,kind,snapshot,savedAt,author:uid,operation:'delete'});
+    }
+    tx.delete(articleRef);
+    if(draft)tx.delete(draftRef);
+  });
+}
 export function storeRecovery(storage, key, content) {
   storage.setItem(key, JSON.stringify({ content, savedAt: Date.now() }));
 }

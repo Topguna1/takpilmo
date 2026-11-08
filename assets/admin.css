@@ -35,3 +35,6 @@ body.dark .field-error{color:#ffb7c9}
 body.dark .badge.draft{background:#493f29;color:#ffe6a7}
 body.dark .badge.archived{background:#39364a;color:#e6e1f5}
 @media(max-width:380px){.admin-theme{width:100%;justify-content:flex-end}}
+
+.admin-page button.admin-danger{color:#9f1239;background:#fff1f2;border:1px solid #e11d48}
+html[data-admin-theme="dark"] .admin-page button.admin-danger{color:#fecdd3;background:#4c1828;border-color:#fb7185}

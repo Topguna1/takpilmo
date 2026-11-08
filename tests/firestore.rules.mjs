@@ -4,7 +4,7 @@ import { after, before, test } from 'node:test';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import * as firestoreApi from 'firebase/firestore';
-import { saveDocument, versionOf } from '../js/admin/persistence.module.js';
+import { saveDocument, deleteDocument, versionOf } from '../js/admin/persistence.module.js';
 let env;
 const content = status => ({title:'검증 글',summary:'요약',body:'본문',category:'학습 정보',siteKeys:['RISS'],sources:[{label:'출처',url:'https://www.riss.kr',checkedAt:'2026-09-22'}],status,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),publishedAt:status === 'published' ? serverTimestamp() : null});
 before(async () => {
@@ -132,5 +132,29 @@ test('attackers cannot self-promote or read/write private collections with forge
     await assertFails(setDoc(doc(db,'infoArticles','attempt'),tip()));
     await assertFails(setDoc(doc(db,'articleDrafts','attempt'),tip()));
     await assertFails(setDoc(doc(db,'adminHistory','attempt'),{articleId:'draft',kind:'article',snapshot:{},savedAt:serverTimestamp(),author:'owner',operation:'save'}));
+  }
+});
+
+test('only enabled admins can delete articles and deletion atomically clears drafts with audit history',async () => {
+  const db=env.authenticatedContext('owner').firestore();
+  for(const status of ['draft','published','archived']){
+    const id='delete-'+status, ref=doc(db,'infoArticles',id), draftRef=doc(db,'articleDrafts',id);
+    await setDoc(ref,content(status));
+    await setDoc(draftRef,content('draft'));
+    for(const context of [env.unauthenticatedContext(),env.authenticatedContext('reader'),env.authenticatedContext('disabled'),env.authenticatedContext('pretender',{admin:true})]){
+      await assertFails(firestoreApi.deleteDoc(doc(context.firestore(),'infoArticles',id)));
+      await assertFails(firestoreApi.deleteDoc(doc(context.firestore(),'articleDrafts',id)));
+    }
+    const args={id,expected:versionOf((await getDoc(ref)).data()),draftExpected:versionOf((await getDoc(draftRef)).data()),uid:'owner'};
+    await rejects(deleteDocument(firestoreApi,db,{...args,expected:'stale'}),{code:'conflict'});
+    await updateDoc(draftRef,{revision:2,updatedAt:serverTimestamp()});
+    await rejects(deleteDocument(firestoreApi,db,args),{code:'conflict'});
+    if(!(await getDoc(ref)).exists())throw Error('conflict deleted article');
+    await deleteDocument(firestoreApi,db,{...args,draftExpected:versionOf((await getDoc(draftRef)).data())});
+    if((await getDoc(ref)).exists() || (await getDoc(draftRef)).exists())throw Error('incomplete deletion');
+    const history=await getDocs(query(collection(db,'adminHistory'),where('articleId','==',id)));
+    if(history.size!==2 || history.docs.some(d=>d.data().operation!=='delete'))throw Error('missing deletion history');
+    await assertFails(firestoreApi.deleteDoc(history.docs[0].ref));
+    await deleteDocument(firestoreApi,db,args);
   }
 });
