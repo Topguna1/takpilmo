@@ -176,9 +176,9 @@ test('pending data is not presented as empty results and invalid rows keep the l
 test('copy fallback is reusable and settings errors are announced inside the dialog', async ({page}) => {
   await ready(page,'#site=RISS');
   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async()=>{throw new Error('denied');}},configurable:true}));
-  await page.locator('[data-share]').click();await page.locator('[data-share]').click();
+  await page.locator('[data-copy-url]').click();await page.locator('[data-copy-url]').click();
   await expect(page.locator('.share-fallback')).toHaveCount(1);
-  await expect(page.locator('.share-fallback')).toHaveValue(/#site=RISS/);
+  await expect(page.locator('.share-fallback')).toHaveValue('https://www.riss.kr/');
   await page.locator('#settingsOpen').click();
   await page.evaluate(()=>{Storage.prototype.setItem=()=>{throw new Error('denied');};});
   await page.locator('[data-pref=siteTheme][data-value=dark]').click();
@@ -214,4 +214,31 @@ test('overview renders new Sheets fields and separates signup age from recommend
   await expect(page.locator('.summary-card')).toContainText('가입 연령 조건만 14세 이상');
   await expect(page.locator('.detail-body')).toContainText('가입 연령 조건: 만 14세 이상');
   await expect(page.locator('.detail-footer')).toContainText('2026-09-13');
+});
+
+
+test('detail clicks survive cross-tab autosave and copy the external site URL',async({page})=>{
+  await ready(page,'#site=RISS');
+  await page.evaluate(()=>{window.__copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>window.__copied.push(text)},configurable:true});});
+  const copy=page.getByRole('button',{name:'사이트 주소 복사',exact:true});
+  await copy.scrollIntoViewIfNeeded();
+  await page.evaluate(()=>window.__originalCopy=document.querySelector('[data-copy-url]'));
+  const box=await copy.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();
+  await page.evaluate(()=>{for(const key of ['takpilmo:editor:owner:draft:tab','adminTheme','siteTheme','ddakpilmo.retention.bookmarks.v1'])window.dispatchEvent(new StorageEvent('storage',{key}));});
+  expect(await page.evaluate(()=>window.__originalCopy===document.querySelector('[data-copy-url]'))).toBe(true);
+  await page.mouse.up();await expect.poll(()=>page.evaluate(()=>window.__copied.length)).toBe(1);
+  expect(await page.evaluate(()=>window.__copied[0])).toBe('https://www.riss.kr/');
+  for(let i=0;i<6;i++){await page.locator('.summary-card [data-save]').click();await expect(page.locator('.summary-card [data-save]')).toHaveAttribute('aria-pressed',String(i%2===0));}
+});
+
+test('all sheet categories expand inline and new categories work without a code allowlist',async({page})=>{
+  const extra=[{key:'book',name:'교과서 사이트',url:'https://book.example.com',category:'textbook',ages:['elem'],subjects:['math']},{key:'future',name:'새 분류 사이트',url:'https://future.example.com',category:'future2026',ages:[],subjects:[]}];
+  await page.route('**/script.google.com/**',r=>r.fulfill({json:{categories:{...categories,textbook:{name:'교과서'},future2026:{name:'새로 추가한 분류'}},sites:[...sites,...extra],details:{}}}));
+  await ready(page,'#/sites');const toggle=page.getByRole('button',{name:'전체 카테고리 보기'});
+  await expect(page.locator('#allCategories')).toBeHidden();await toggle.click();await expect(toggle).toHaveAttribute('aria-expanded','true');
+  await page.locator('#allCategories').getByRole('link',{name:'새로 추가한 분류'}).click();await expect(page.locator('.site-card')).toHaveCount(1);await expect(page.locator('.site-card')).toContainText('새 분류 사이트');
+  await page.reload();await expect(page.locator('.site-card')).toContainText('새 분류 사이트');
+  await page.locator('#allCategoriesToggle').click();await page.locator('#allCategories').getByRole('link',{name:'교과서'}).click();await expect(page.locator('.site-card')).toContainText('교과서 사이트');
+  await page.goto('/index.html#/sites?group=study&category=textbook');await expect(page.locator('.site-card')).toHaveCount(1);await expect(page.locator('.site-card')).toContainText('교과서 사이트');
+  await page.setViewportSize({width:320,height:900});await page.locator('#allCategoriesToggle').click();await expect(page.locator('#allCategories')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
